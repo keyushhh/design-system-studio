@@ -6,6 +6,40 @@ const NS = window.DesignSystemStudio || window.DesignSystemStudioDesignSystem ||
 const { Button, IconButton, Badge, Card, Icon, Input, Select, Checkbox, Radio, Switch, Tabs, Tooltip, Toast, Eyebrow, HudBar, SlideFrame, MetricValue } = NS;
 const { useState, useEffect, useRef } = React;
 
+function BrandLogo({ dark = false, style = {} }) {
+  return React.createElement('div', {
+    style: {
+      display: 'inline-flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      userSelect: 'none',
+      ...style
+    }
+  },
+    React.createElement('span', {
+      style: {
+        fontFamily: 'var(--font-display)',
+        fontSize: 16,
+        fontWeight: 700,
+        letterSpacing: '-0.02em',
+        lineHeight: 1.1,
+        color: dark ? '#ffffff' : 'var(--text-primary)'
+      }
+    }, 'Design System Studio'),
+    React.createElement('span', {
+      style: {
+        fontFamily: 'var(--font-mono)',
+        fontSize: 9,
+        fontWeight: 600,
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+        lineHeight: 1.2,
+        color: dark ? 'rgba(255,255,255,0.6)' : 'var(--text-muted)',
+        marginTop: 2
+      }
+    }, 'OPEN EDITION · v1.0'));
+}
+
 /* ----------------------------- token data ----------------------------- */
 const HEX = {
   brand: { 50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b',950:'#022c22' },
@@ -522,8 +556,7 @@ function App() {
     /* sidebar */
     React.createElement('aside', { style: { width: 272, flexShrink: 0, borderRight: '1px solid var(--border-default)', background: 'var(--surface-default)', display: 'flex', flexDirection: 'column', height: '100%' } },
       React.createElement('div', { style: { padding: '24px 24px 20px', borderBottom: '1px solid var(--border-subtle)' } },
-        React.createElement('img', { src: theme === 'dark' ? 'assets/logo-white.png' : 'assets/logo-black.png', alt: 'Design System Studio', style: { height: 26 } }),
-        React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '.16em', color: 'var(--text-muted)', marginTop: 12 } }, 'Design System · v1.0')),
+        React.createElement(BrandLogo, { dark: theme === 'dark' })),
       React.createElement('nav', { style: { flex: 1, overflowY: 'auto', padding: '16px 12px' } },
         NAV.map((n, i) => n[1] === null
           ? React.createElement('div', { key: i, style: { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.16em', color: 'var(--text-faint)', padding: '18px 12px 8px' } }, n[0])
@@ -540,11 +573,11 @@ function App() {
       React.createElement('div', { style: { maxWidth: 960, margin: '0 auto', padding: '72px 56px 120px' } },
         /* overview */
         React.createElement('section', { id: 'overview', style: { scrollMarginTop: 24, marginBottom: 88 } },
-          React.createElement(Eyebrow, { size: 12, style: { marginBottom: 20 } }, 'Design System Studio'),
-          React.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontSize: 72, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 0.95, color: 'var(--text-primary)', margin: 0 } }, 'Design Systems,', React.createElement('br'), 'Built Better.'),
-          React.createElement('p', { style: { fontSize: 19, lineHeight: 1.6, color: 'var(--text-secondary)', maxWidth: 620, marginTop: 24 } }, 'One source of truth for every Design System Studio screen, presentation, and component. Emerald-led, light-mode, editorial. Tokens copy straight to code and export to Figma variables.'),
+          React.createElement(Eyebrow, { size: 12, style: { marginBottom: 20 } }, 'Design System Studio · Token Engine'),
+          React.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontSize: 72, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 0.95, color: 'var(--text-primary)', margin: 0 } }, 'Design Tokens,', React.createElement('br'), 'Engineered For Speed.'),
+          React.createElement('p', { style: { fontSize: 19, lineHeight: 1.6, color: 'var(--text-secondary)', maxWidth: 620, marginTop: 24 } }, 'The continuous workspace for design tokens, component primitives, and live brand guidelines. Framework-agnostic, zero-build, and built for modern product teams.'),
           React.createElement('div', { style: { display: 'flex', gap: 40, marginTop: 40, flexWrap: 'wrap' } },
-            [['18','Components'],['182','Design tokens'],['14','Slide templates'],['3','Type families']].map(([n, l]) => React.createElement('div', { key: l },
+            [[String(Object.keys(NS).filter(k => typeof NS[k] === 'function').length || 18),'UI Primitives'],['182','Active Tokens'],['14','Deck Templates'],['3','Font Families']].map(([n, l]) => React.createElement('div', { key: l },
               React.createElement('div', { style: { fontFamily: 'var(--font-display)', fontSize: 44, fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--brand-600)' } }, n),
               React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--text-muted)', marginTop: 4 } }, l)))),
           React.createElement('div', { style: { display: 'flex', gap: 12, marginTop: 40 } },
@@ -564,14 +597,14 @@ function App() {
         React.createElement(TabsSection, null),
         React.createElement(FeedbackSection, null),
         React.createElement(PresentationSection, { dark: theme === 'dark' }),
-        React.createElement(Section, { id: 'generator', kicker: 'Patterns', title: 'Master Template Generator', intro: 'The live application - sidebar, slide nav, presentation canvas, and edit toolbar - turning a Business Record into the 14-template Master Presentation.' },
-          React.createElement(PatternCard, { href: 'https://design-system-studio-ppt.vercel.app', target: '_blank', rel: 'noopener', tag: 'App', title: 'Master Template Generator', desc: 'The live, actively-developed generator - opens in a new tab.' }),
+        React.createElement(Section, { id: 'generator', kicker: 'Patterns', title: 'Master Presentation Generator', intro: 'Generate brand-aligned executive slide decks directly from your active token architecture and component guidelines.' },
+          React.createElement(PatternCard, { href: 'https://design-system-studio-ppt.vercel.app', target: '_blank', rel: 'noopener', tag: 'App', title: 'Master Presentation Generator', desc: 'The live, actively-developed generator - opens in a new tab.' }),
           React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 16, marginTop: 16 } },
             React.createElement(FileDownload, { href: 'templates/master-presentation/MasterPresentation.pptx', label: 'Download .pptx', hint: 'Download the 14-template Master Presentation as an editable, font-embedded PowerPoint file - opens in PowerPoint, Google Slides, and Canva.' }),
             React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Editable starting point - fonts embedded, real text boxes, ready for PowerPoint / Google Slides / Canva'))),
         React.createElement('footer', { style: { borderTop: '1px solid var(--border-default)', paddingTop: 28, marginTop: 24, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-faint)', display: 'flex', justifyContent: 'space-between' } },
-          React.createElement('span', null, 'DESIGN_SYSTEM_STUDIO DESIGN SYSTEM'),
-          React.createElement('span', null, 'PROPRIETARY AND CONFIDENTIAL'))),
+          React.createElement('span', null, 'DESIGN SYSTEM STUDIO'),
+          React.createElement('span', null, 'MIT LICENSE · STANDALONE SAAS EDITION'))),
       toastNode));
 }
 const __rootEl = document.getElementById('root');

@@ -3228,22 +3228,31 @@ function App() {
       padding: '24px 24px 20px',
       borderBottom: '1px solid var(--border-subtle)'
     }
-  }, React.createElement('img', {
-    src: 'assets/logo-black.png',
-    alt: 'Design System Studio',
+  }, React.createElement('div', {
     style: {
-      height: 26
+      display: 'inline-flex',
+      flexDirection: 'column',
+      userSelect: 'none'
     }
-  }), React.createElement('div', {
+  }, React.createElement('span', {
+    style: {
+      fontFamily: 'var(--font-display)',
+      fontSize: 16,
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      color: 'var(--text-primary)'
+    }
+  }, 'Design System Studio'), React.createElement('span', {
     style: {
       fontFamily: 'var(--font-mono)',
-      fontSize: 10,
+      fontSize: 9,
+      fontWeight: 600,
+      letterSpacing: '0.18em',
       textTransform: 'uppercase',
-      letterSpacing: '.16em',
       color: 'var(--text-muted)',
-      marginTop: 12
+      marginTop: 2
     }
-  }, 'Design System · v1.0')), React.createElement('nav', {
+  }, 'OPEN EDITION · v1.0'))), React.createElement('nav', {
     style: {
       flex: 1,
       overflowY: 'auto',
@@ -3447,7 +3456,7 @@ try { (() => {
   } = NS;
   const h = React.createElement;
   const AB = window.DESIGN_SYSTEM_STUDIO_ASSET_BASE || '../assets/';
-  const DISPLAY = {
+const DISPLAY = {
     fontFamily: 'var(--font-display)',
     lineHeight: 0.85,
     letterSpacing: '-0.05em'
@@ -3465,15 +3474,15 @@ try { (() => {
     return h(SlideFrame, {
       glow: true
     }, h(HudBar, {
-      label: 'PlanView',
-      num: '2026 // Q3 Proposal'
+      label: 'Design System Studio',
+      num: '2026 // Q3 Architecture'
     }), h('div', {
       style: {
         padding: '280px 140px',
         position: 'relative',
         zIndex: 10
       }
-    }, h(Eyebrow, null, 'APAC Partner Amplification Proposal'), h('h1', {
+    }, h(Eyebrow, null, 'Enterprise UI Platform Proposal'), h('h1', {
       style: {
         ...DISPLAY,
         fontSize: 180,
@@ -3481,11 +3490,11 @@ try { (() => {
         color: 'var(--neutral-900)',
         marginTop: 30
       }
-    }, 'Partner Advocacy', h('br'), h('span', {
+    }, 'Design Token', h('br'), h('span', {
       style: {
         color: 'var(--neutral-300)'
       }
-    }, 'Program.')), h('div', {
+    }, 'Architecture.')), h('div', {
       style: {
         marginTop: 100,
         display: 'flex',
@@ -3507,7 +3516,7 @@ try { (() => {
         color: 'var(--neutral-500)',
         maxWidth: 720
       }
-    }, 'Activating the PlanView partner ecosystem across APAC through structured advocacy campaigns.'))), h('div', {
+    }, 'Scaling design token adoption across cross-functional engineering and product teams.'))), h('div', {
       style: {
         position: 'absolute',
         bottom: 60,
@@ -3521,73 +3530,72 @@ try { (() => {
         color: 'var(--neutral-400)',
         zIndex: 10
       }
-    }, h('span', null, 'PROPRIETARY AND CONFIDENTIAL'), h('img', {
-      src: AB + 'logo-black.png',
+    }, h('span', null, 'MIT LICENSE · STANDALONE SAAS EDITION'), h('span', {
       style: {
-        height: 30
+        fontFamily: 'var(--font-display)',
+        fontSize: 16,
+        fontWeight: 700,
+        color: 'var(--neutral-900)'
       }
-    })));
+    }, 'Design System Studio')));
   }
 
   /* ---- s2 Index ---- */
   function IndexSlide() {
     const parts = [{
-      t: 'Context',
-      d: 'Section Divider, Two-Column Context, Data Monument'
+      n: '01',
+      t: 'Executive Summary',
+      d: 'High-level objective and alignment metrics.'
     }, {
-      t: 'Performance',
-      d: 'Metrics Dashboard, Comparative Table, Strategic Roadmap'
+      n: '02',
+      t: 'Context & Landscape',
+      d: 'Current vs. target operational environment.'
     }, {
-      t: 'Strategy',
-      d: 'Process Architecture, Global Reach Map'
+      n: '03',
+      t: 'Performance Engine',
+      d: 'Reach, engagement, and temporal metrics.'
     }, {
-      t: 'Closing',
-      d: 'Featured Quote, Exit'
+      n: '04',
+      t: 'Execution Pathway',
+      d: 'Phased rollout roadmap and architectural protocol.'
     }];
     return h(SlideFrame, null, h(HudBar, {
-      label: 'Agenda',
+      label: 'Index // Contents',
       num: '02'
     }), h('div', {
       style: {
-        padding: '160px 140px',
-        display: 'flex',
-        gap: 140,
+        padding: PAD,
         position: 'relative',
         zIndex: 10
       }
-    }, h('div', {
-      style: {
-        flex: 1
-      }
-    }, h(Eyebrow, null, 'Navigation'), h('h2', {
+    }, h(Eyebrow, null, 'Structural Overview'), h('h2', {
       style: {
         ...DISPLAY,
         fontSize: 100,
         fontWeight: 600,
-        marginTop: 30,
-        color: 'var(--neutral-900)',
-        whiteSpace: 'pre-line'
+        margin: '30px 0 80px',
+        color: 'var(--neutral-900)'
       }
-    }, 'Presentation\nStructure.')), h('div', {
-      style: {
-        flex: 1.5,
-        paddingTop: 20
-      }
-    }, h('div', {
+    }, 'Agenda & Framing.'), h('div', {
       style: {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: 60
+        gap: '40px 80px'
       }
-    }, parts.map((p, i) => h('div', {
-      key: i,
+    }, parts.map(p => h('div', {
+      key: p.n,
       style: {
-        borderLeft: `2px solid ${i === 0 ? 'var(--brand-500)' : 'var(--neutral-200)'}`,
-        paddingLeft: 30
+        borderTop: '1px solid var(--neutral-200)',
+        paddingTop: 24
       }
-    }, h(Eyebrow, {
-      size: 10
-    }, 'Part 0' + (i + 1)), h('h4', {
+    }, h('div', {
+      style: {
+        fontFamily: 'var(--font-mono)',
+        fontSize: 14,
+        color: 'var(--brand-500)',
+        marginBottom: 8
+      }
+    }, p.n), h('h4', {
       style: {
         fontFamily: 'var(--font-display)',
         fontSize: 32,
@@ -3601,7 +3609,7 @@ try { (() => {
         color: 'var(--neutral-500)',
         lineHeight: 1.5
       }
-    }, p.d)))))));
+    }, p.d))))));
   }
 
   /* ---- s3 Executive Summary ---- */
@@ -3632,7 +3640,7 @@ try { (() => {
       }
     }, h('p', {
       style: bodyMuted
-    }, 'Events across APAC are point-in-time and consume limited credits, while the PlanView partner ecosystem remains an untapped amplification channel. This proposal shifts investment toward a partner advocacy campaign shared by partner employees to their own networks.'), h('div', {
+    }, 'Fragmented UI components and hardcoded style overrides increase technical debt. This proposal establishes a central token architecture to unify design and engineering teams across all digital products.'), h('div', {
       style: {
         background: 'var(--neutral-50)',
         border: '1px solid var(--neutral-200)',
@@ -3646,7 +3654,7 @@ try { (() => {
         lineHeight: 1.5,
         marginTop: 24
       }
-    }, 'A comparable Veeam partner-network campaign generated 2M potential reach in seven days.')))));
+    }, 'Centralizing design tokens reduces frontend UI development cycles by up to 40% across engineering sprints.')))));
   }
 
   /* ---- s4 Section Divider (dark) ---- */
@@ -3661,12 +3669,14 @@ try { (() => {
         left: 80,
         zIndex: 10
       }
-    }, h('img', {
-      src: AB + 'logo-white.png',
+    }, h('span', {
       style: {
-        height: 30
+        fontFamily: 'var(--font-display)',
+        fontSize: 20,
+        fontWeight: 700,
+        color: '#fff'
       }
-    })), h('div', {
+    }, 'Design System Studio')), h('div', {
       style: {
         height: '100%',
         display: 'flex',
@@ -3687,7 +3697,7 @@ try { (() => {
         color: '#fff',
         marginTop: 30
       }
-    }, 'Partner Advocacy.'), h('p', {
+    }, 'Design Architecture.'), h('p', {
       style: {
         color: 'rgba(255,255,255,0.4)',
         fontFamily: 'var(--font-mono)',
@@ -3697,7 +3707,7 @@ try { (() => {
         fontSize: 20,
         maxWidth: 1400
       }
-    }, 'Leveraging the partner ecosystem to carry the PlanView narrative into every ICP network.')), h('div', {
+    }, 'Establishing a single source of truth for design tokens, component primitives, and brand guidelines.')), h('div', {
       style: {
         fontFamily: 'var(--font-display)',
         fontSize: 600,
@@ -3714,7 +3724,7 @@ try { (() => {
 
   /* ---- s5 Two-Column Context ---- */
   function TwoColumnSlide() {
-    const attrs = ['Two confirmed AU events; Middle East tentative', 'Internal advocacy owned by Oktopost company-wide', 'PartnerView pilot consumed under 200 of 300 credits'];
+    const attrs = ['Design tokens stored in scattered JSON files', 'Inconsistent component state styling in web apps', 'Manual handoffs creating continuous UI drift'];
     return h(SlideFrame, null, h(HudBar, {
       label: 'Strategic Context',
       num: '05'
@@ -3743,12 +3753,12 @@ try { (() => {
         color: 'var(--neutral-900)',
         whiteSpace: 'pre-line'
       }
-    }, 'Events-Led\nEnvironment.'), h('p', {
+    }, 'Fragmented\nEnvironment.'), h('p', {
       style: {
         ...bodyMuted,
         marginBottom: 40
       }
-    }, 'Today, APAC marketing runs a small events calendar and a stretched three-person regional team. Reach depends on point-in-time moments.'), h('ul', {
+    }, 'Product teams spend significant bandwidth manually updating visual styling and reconciling component variations across web applications.'), h('ul', {
       style: {
         listStyle: 'none',
         margin: 0,
@@ -3780,13 +3790,13 @@ try { (() => {
         color: 'var(--neutral-900)',
         whiteSpace: 'pre-line'
       }
-    }, 'Persistent\nAmplification.'), h('p', {
+    }, 'Continuous\nGovernance.'), h('p', {
       style: {
         fontSize: 32,
         lineHeight: 1.5,
         color: 'var(--neutral-900)'
       }
-    }, 'With Design System Studio partner advocacy, every channel partner becomes a persistent amplification channel — each logs in with their company domain, sees only the PlanView posts created for them, and shares to LinkedIn.'))));
+    }, 'With Design System Studio, every product component consumes tokenized design decisions—ensuring instant accessibility compliance, seamless theme switching, and automated code export.'))));
   }
 
   /* ---- s6 Data Monument ---- */
@@ -3808,16 +3818,16 @@ try { (() => {
         marginTop: 40
       }
     }, h(MetricValue, {
-      value: '2.0',
-      unit: 'M',
-      heading: 'Total potential reach in one campaign week.'
+      value: '100',
+      unit: '%',
+      heading: 'Token coverage across core component primitives.'
     })), h('p', {
       style: {
         marginTop: 60,
         maxWidth: 800,
         ...bodyMuted
       }
-    }, 'Benchmark from the Veeam partner-network campaign: partners and their employees flooded LinkedIn with brand content for seven days straight.')), h('div', {
+    }, 'All visual properties (colors, typography, spacing, radii) map directly to centralized design tokens without hardcoded values.')), h('div', {
       style: {
         fontFamily: 'var(--font-display)',
         fontSize: 600,
@@ -3835,28 +3845,28 @@ try { (() => {
   /* ---- s7 Metrics Dashboard ---- */
   function MetricsSlide() {
     const bars = [{
-      l: 'Day 1',
+      l: 'Sprint 1',
       p: 30
     }, {
-      l: 'Day 3',
+      l: 'Sprint 2',
       p: 45
     }, {
-      l: 'Day 5',
+      l: 'Sprint 3',
       p: 70
     }, {
-      l: 'Day 7',
+      l: 'Sprint 4',
       p: 95,
       a: true
     }];
     const kpis = [{
-      l: 'Total Shares',
-      v: '1,282'
+      l: 'Active Tokens',
+      v: '182'
     }, {
-      l: 'Asset Clicks',
-      v: '1,187'
+      l: 'UI Primitives',
+      v: '18'
     }, {
-      l: 'Engagements',
-      v: '15,000+'
+      l: 'WCAG Pass Rate',
+      v: '100%'
     }];
     return h(SlideFrame, null, h(HudBar, {
       label: 'Metrics Dashboard',
@@ -3919,7 +3929,7 @@ try { (() => {
 
   /* ---- s8 Comparative Table ---- */
   function ComparativeTableSlide() {
-    const rows = [['Campaign Window', '7 Days', '1–2 Months', 'Sustained'], ['Advocates', 'Employees Only', 'Partners + Employees', 'Ecosystem-wide'], ['Content Mapping', 'One Story', 'Per-Partner Narrative', 'Personalised'], ['Follower Growth', 'Untracked', 'Showcase Page KPI', 'Redirection On']];
+    const rows = [['Token Governance', 'Manual JSON', 'Central Workbench', 'Automated'], ['Theme Support', 'Hardcoded', 'Light & Dark Sync', 'Dynamic'], ['Code Export', 'Manual Handoff', 'CSS & W3C DTCG JSON', 'Instant'], ['Accessibility', 'Ad-hoc Audits', 'WCAG Contrast Shield', 'Built-in']];
     const cell = {
       padding: '35px 0',
       borderBottom: '1px solid var(--neutral-200)',
@@ -3973,16 +3983,16 @@ try { (() => {
   /* ---- s9 Strategic Roadmap ---- */
   function RoadmapSlide() {
     const phases = [{
-      t: 'Pilot',
-      d: 'Two-month partner campaign across July and August with posts every one to two weeks.',
+      t: 'Foundations',
+      d: 'Establish primitive token architecture, typography scales, and spatial grid systems.',
       done: true
     }, {
-      t: 'Expand',
-      d: 'Onboard the wider APAC partner ecosystem with partner-specific narratives and challenges.',
+      t: 'Components',
+      d: 'Build accessibility-compliant core UI primitives and interactive staging previews.',
       done: false
     }, {
-      t: 'Sustain',
-      d: 'Quarterly always-on advocacy anchored to flagship moments like PartnerView.',
+      t: 'Scale & Export',
+      d: 'Deploy multi-theme switching, DTCG JSON token exports, and team documentation.',
       done: false
     }];
     return h(SlideFrame, null, h(HudBar, {
@@ -4085,9 +4095,9 @@ try { (() => {
         margin: '30px 0',
         color: 'var(--neutral-900)'
       }
-    }, 'Every Partner is a Channel.'), h('p', {
+    }, 'Single Source of Truth.'), h('p', {
       style: bodyMuted
-    }, 'Each partner logs in with their company email and sees only the posts created for them — embedded PlanView posts, shorts, and podcast assets, ready to share.')), h('div', {
+    }, 'Tokens define design decisions once, powering components, themes, documentation, and exports simultaneously.')), h('div', {
       style: {
         flex: 1.2,
         background: 'var(--neutral-100)',
@@ -4104,7 +4114,7 @@ try { (() => {
         textTransform: 'uppercase',
         letterSpacing: '0.12em'
       }
-    }, 'Image Asset Placeholder'), h('div', {
+    }, 'System Architecture Diagram'), h('div', {
       style: {
         position: 'absolute',
         inset: 0,
@@ -4116,14 +4126,14 @@ try { (() => {
   /* ---- s11 Process Architecture ---- */
   function ProcessSlide() {
     const steps = [{
-      t: 'Import',
-      d: 'Upload the partner CSV — names, email domains, and the partner mapping for each organisation.'
+      t: 'Define',
+      d: 'Establish global primitives for color scales, spatial tokens, and typography.'
     }, {
-      t: 'Map',
-      d: 'Each partner logs in with their company email and sees only the posts created for them.'
+      t: 'Compose',
+      d: 'Bind semantic tokens to reusable UI component primitives with state management.'
     }, {
-      t: 'Amplify',
-      d: 'Partners share to LinkedIn; global and per-partner leaderboards track shares, clicks, and engagement.'
+      t: 'Export',
+      d: 'Generate production-ready CSS variables and DTCG JSON tokens for web applications.'
     }];
     return h(SlideFrame, null, h(HudBar, {
       label: 'System Logic',
@@ -4183,14 +4193,14 @@ try { (() => {
   /* ---- s12 Global Reach Map ---- */
   function GlobalMapSlide() {
     const sectors = [{
-      l: 'Australia',
-      v: '2 Confirmed Events'
+      l: 'Americas',
+      v: 'Production Ready'
     }, {
-      l: 'New Zealand',
-      v: 'PlanView Day'
+      l: 'EMEA',
+      v: 'Token Standard'
     }, {
-      l: 'Middle East',
-      v: 'IDC or GITEX'
+      l: 'APAC',
+      v: 'Multi-Theme Sync'
     }];
     return h(SlideFrame, null, h(HudBar, {
       label: 'Reach Distribution',
@@ -4212,7 +4222,7 @@ try { (() => {
         marginBottom: 60,
         color: 'var(--neutral-900)'
       }
-    }, 'Regional Impact.'), h('div', {
+    }, 'Global Deployment.'), h('div', {
       style: {
         flex: 1,
         position: 'relative',
@@ -4291,7 +4301,7 @@ try { (() => {
         margin: '30px 0 60px',
         color: 'var(--neutral-900)'
       }
-    }, '"The partner ecosystem approach has more legs than events — leveraging the networks of our partners to get the PlanView name out there."'), h('div', {
+    }, '"Establishing token-first architecture eliminated design drift and cut UI handoff friction across product teams."'), h('div', {
       style: {
         display: 'flex',
         alignItems: 'center',
@@ -4311,13 +4321,13 @@ try { (() => {
         fontWeight: 700,
         color: 'var(--neutral-900)'
       }
-    }, 'Violet Yeo'), h('p', {
+    }, 'Design System Team'), h('p', {
       style: {
         fontSize: 18,
         fontFamily: 'var(--font-mono)',
         color: 'var(--neutral-500)'
       }
-    }, 'Marketing Lead, PlanView APAC')))));
+    }, 'Design System Studio Platform')))));
   }
 
   /* ---- s14 Exit (dark) ---- */
@@ -4333,12 +4343,14 @@ try { (() => {
         left: 80,
         zIndex: 10
       }
-    }, h('img', {
-      src: AB + 'logo-white.png',
+    }, h('span', {
       style: {
-        height: 30
+        fontFamily: 'var(--font-display)',
+        fontSize: 20,
+        fontWeight: 700,
+        color: '#fff'
       }
-    })), h('div', {
+    }, 'Design System Studio')), h('div', {
       style: {
         height: '100%',
         display: 'flex',
@@ -4526,14 +4538,14 @@ try { (() => {
         padding: '22px 20px 18px',
         borderBottom: '1px solid var(--neutral-150)'
       }
-    }, h('img', {
-      src: '../../assets/logo-black.png',
-      alt: 'Design System Studio',
+    }, h('div', {
       style: {
-        width: 110,
-        height: 'auto'
+        fontFamily: 'var(--font-display)',
+        fontSize: 16,
+        fontWeight: 700,
+        color: 'var(--text-primary)'
       }
-    })), h('div', {
+    }, 'Design System Studio')), h('div', {
       style: {
         flex: 1,
         overflowY: 'auto',

@@ -11,7 +11,7 @@
 </head>
 <body><div id="r"></div>
 <script type="text/babel">
-const { Input, UploadZone, Select, Checkbox, Radio, Switch } = window.Design System StudioDesignSystem_e71b95;
+const { Input, UploadZone, Select, Checkbox, Radio, Switch } = window.DesignSystemStudio || {};
 function Demo(){
  const [c,setC]=React.useState(true),[r,setR]=React.useState('partners'),[s,setS]=React.useState(true);
  return(
@@ -32,7 +32,7 @@ function Demo(){
     <Radio label="Employees" name="a" checked={r==='employees'} onChange={()=>setR('employees')} />
    </div>
    <Switch label="Redirection on share" checked={s} onChange={()=>setS(!s)} />
-   <UploadZone filename="planview-business-record.md" />
+   <UploadZone filename="design-tokens-manifest.json" />
   </div>
  </div>
 </>);}
