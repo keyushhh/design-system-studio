@@ -6,7 +6,7 @@ user-invocable: true
 
 Read the `readme.md` file within this skill, and explore the other available files.
 
-Design System Studio is an advocacy marketing platform; its flagship internal product is the **Master Template Generator**, which turns a structured Business Record into an editorial slide deck. The brand is **emerald-green, light-mode, editorial-consulting** - clarity over decoration, near-monochrome neutrals with emerald as the single accent, oversized Space Grotesk display type, Satoshi for interface/body, JetBrains Mono for labels and numbers, and mostly sharp (square) corners in-product.
+Design System Studio is a standalone design system and token platform; its flagship presentation tool is the **Master Template Generator**, which turns a structured Business Record into an editorial slide deck. The brand is **emerald-green, light-mode, editorial-consulting** - clarity over decoration, near-monochrome neutrals with emerald as the single accent, oversized Space Grotesk display type, Satoshi for interface/body, JetBrains Mono for labels and numbers, and mostly sharp (square) corners in-product.
 
 ## What's here
 - `styles.css` - the one stylesheet to link; imports all tokens + webfonts (`tokens/*.css`).

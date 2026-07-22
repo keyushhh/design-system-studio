@@ -28,7 +28,7 @@
   var saved = read() === 'dark' ? 'dark' : 'light';
   apply(saved);
 
-  window.Design System StudioTheme = {
+  window.DesignSystemStudioTheme = {
     get: function () { return read() === 'dark' ? 'dark' : 'light'; },
     set: function (theme) {
       var t = theme === 'dark' ? 'dark' : 'light';
@@ -37,7 +37,7 @@
       return t;
     },
     toggle: function () {
-      return window.Design System StudioTheme.set(window.Design System StudioTheme.get() === 'dark' ? 'light' : 'dark');
+      return window.DesignSystemStudioTheme.set(window.DesignSystemStudioTheme.get() === 'dark' ? 'light' : 'dark');
     },
   };
 })();

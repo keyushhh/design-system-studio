@@ -2,7 +2,7 @@
 
 (() => {
 
-const __ds_ns = (window.Design System StudioDesignSystem_e71b95 = window.Design System StudioDesignSystem_e71b95 || {});
+const __ds_ns = (window.DesignSystemStudio = window.DesignSystemStudio || {});
 
 const __ds_scope = {};
 
@@ -850,6 +850,7 @@ function Checkbox({
     ref: ref,
     type: "checkbox",
     checked: !!checked,
+    readOnly: !onChange,
     disabled: disabled,
     onChange: onChange,
     style: {
@@ -1584,8 +1585,7 @@ try { (() => {
 /* Design System Studio — single-page documentation site.
    Renders foundations (token tables w/ copy + Figma export), the full
    component library across states, and pattern links. Depends on the DS
-   bundle (window.Design System StudioDesignSystem_e71b95). */
-const NS = window.Design System StudioDesignSystem_e71b95;
+const NS = window.DesignSystemStudio || {};
 const {
   Button,
   IconButton,
@@ -3330,7 +3330,7 @@ function App() {
     style: {
       marginBottom: 20
     }
-  }, 'Design System Studio · Advocacy Marketing Platform'), React.createElement('h1', {
+  }, 'Design System Studio'), React.createElement('h1', {
     style: {
       fontFamily: 'var(--font-display)',
       fontSize: 72,
@@ -3427,18 +3427,18 @@ function App() {
   }, React.createElement('span', null, 'DESIGN_SYSTEM_STUDIO DESIGN SYSTEM'), React.createElement('span', null, 'PROPRIETARY AND CONFIDENTIAL'))), toastNode));
 }
 const __rootEl = document.getElementById('root');
-window.__design-system-studioDSRoot = window.__design-system-studioDSRoot || ReactDOM.createRoot(__rootEl);
-window.__design-system-studioDSRoot.render(React.createElement(App));
+window.DesignSystemStudioDSRoot = window.DesignSystemStudioDSRoot || ReactDOM.createRoot(__rootEl);
+window.DesignSystemStudioDSRoot.render(React.createElement(App));
 })(); } catch (e) { __ds_ns.__errors.push({ path: "designsystem.app.jsx", error: String((e && e.message) || e) }); }
 
 // slides/slideRenderers.jsx
 try { (() => {
 /* Design System Studio Master Presentation — the 14 slide templates, faithfully recreated from
    PresentationCanvas.tsx and populated with the PlanView sample Business Record.
-   Exposes window.Design System StudioSlides. Depends on the DS bundle (SlideFrame, Eyebrow,
+   Exposes window.DesignSystemStudioSlides. Depends on the DS bundle (SlideFrame, Eyebrow,
    HudBar, MetricValue) being loaded first. */
 (function () {
-  const NS = window.Design System StudioDesignSystem_e71b95;
+  const NS = window.DesignSystemStudio || {};
   const {
     SlideFrame,
     Eyebrow,
@@ -4379,7 +4379,7 @@ try { (() => {
       }
     }, c)))));
   }
-  window.Design System StudioSlides = {
+  window.DesignSystemStudioSlides = {
     TitleSlide,
     IndexSlide,
     ExecutiveSummarySlide,
@@ -4402,9 +4402,9 @@ try { (() => {
 // ui_kits/master-template-generator/Sidebar.jsx
 try { (() => {
 /* Master Template Generator — sidebar. Grouped slide nav with hover row
-   actions, Source Material upload, Generate + Share. Exposes window.Design System StudioKit.Sidebar. */
+   actions, Source Material upload, Generate + Share. Exposes window.DesignSystemStudioKit.Sidebar. */
 (function () {
-  const NS = window.Design System StudioDesignSystem_e71b95;
+  const NS = window.DesignSystemStudio || {};
   const {
     Button,
     IconButton,
@@ -4648,7 +4648,7 @@ try { (() => {
       }
     }, 'Copy Share Link')))));
   }
-  window.Design System StudioKit = {
+  window.DesignSystemStudioKit = {
     Sidebar
   };
 })();

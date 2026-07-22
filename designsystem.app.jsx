@@ -2,7 +2,7 @@
    Renders foundations (token tables w/ copy + Figma export), the full
    component library across states, and pattern links. Depends on the DS
    bundle (window.Design System StudioDesignSystem_e71b95). */
-const NS = window.Design System StudioDesignSystem_e71b95;
+const NS = window.DesignSystemStudio || window.DesignSystemStudioDesignSystem || {};
 const { Button, IconButton, Badge, Card, Icon, Input, Select, Checkbox, Radio, Switch, Tabs, Tooltip, Toast, Eyebrow, HudBar, SlideFrame, MetricValue } = NS;
 const { useState, useEffect, useRef } = React;
 
@@ -210,7 +210,7 @@ function TypeSection({ push }) {
         React.createElement('div', null,
           React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 } }, t[0]),
           React.createElement('div', { style: { fontSize: 11, color: 'var(--text-muted)', marginTop: 3 } }, t[6])),
-        React.createElement('span', { style: { fontFamily: famOf(t[1]), fontSize: Math.min(parseInt(t[3]), 34), fontWeight: t[2], letterSpacing: t[5], lineHeight: 1.1, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, t[1] === 'JetBrains Mono' ? 'REACH · 15,000+' : 'Advocacy at scale'),
+        React.createElement('span', { style: { fontFamily: famOf(t[1]), fontSize: Math.min(parseInt(t[3]), 34), fontWeight: t[2], letterSpacing: t[5], lineHeight: 1.1, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, t[1] === 'JetBrains Mono' ? 'REACH · 15,000+' : 'Design System Studio'),
         React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' } }, `${t[1].split(' ')[0]} · ${t[2]} · ${t[3]} · ${t[5]}`)))));
 }
 
@@ -313,7 +313,7 @@ function FormsSection() {
       React.createElement(Panel, null,
         React.createElement(Sub, null, 'Text & select'),
         React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
-          React.createElement(Input, { label: 'Deck title', defaultValue: 'Partner Advocacy Program' }),
+          React.createElement(Input, { label: 'Deck title', defaultValue: 'Design System Studio' }),
           React.createElement(Input, { label: 'Contact email', defaultValue: 'hello@', error: 'Enter a valid email' }),
           React.createElement(Select, { label: 'Template', options: ['Business Record','Executive Brief','Proposal'] }))),
       React.createElement(Panel, null,
@@ -426,16 +426,88 @@ function figmaExport() {
   const url = URL.createObjectURL(blob); const a = document.createElement('a');
   a.href = url; a.download = 'design-system-studio-design.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 }
-
 function App() {
   const [push, toastNode] = useToast();
   const [active, setActive] = useState('overview');
-  const [theme, setThemeState] = useState(() => (window.Design System StudioTheme ? window.Design System StudioTheme.get() : 'light'));
   const mainRef = useRef(null);
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setThemeState(window.Design System StudioTheme ? window.Design System StudioTheme.set(next) : next);
+
+  /* --- Multi-Theme Ready Data Model Architecture --- */
+  const DEFAULT_THEME_ID = 'default';
+
+  // Helper to load or initialize workspace structure with Theme model
+  const loadWorkspaceState = () => {
+    const STORAGE_KEY = 'design-system-studio-workspace';
+    const LEGACY_TOKEN_KEY = 'design-system-studio-token-overrides';
+
+    let savedWorkspace = null;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) savedWorkspace = JSON.parse(raw);
+    } catch (e) {}
+
+    // Auto-migrate legacy token overrides if present
+    let legacyOverrides = {};
+    try {
+      const legacyRaw = localStorage.getItem(LEGACY_TOKEN_KEY);
+      if (legacyRaw) {
+        legacyOverrides = JSON.parse(legacyRaw);
+      }
+    } catch (e) {}
+
+    if (savedWorkspace && savedWorkspace.themes && savedWorkspace.themes.length > 0) {
+      return savedWorkspace;
+    }
+
+    const getThemeHelper = () => window.DesignSystemStudioTheme || window.ThemeInit;
+
+    // Default Theme Model setup
+    const defaultTheme = {
+      id: DEFAULT_THEME_ID,
+      name: 'Default',
+      isDefault: true,
+      mode: getThemeHelper() ? getThemeHelper().get() : 'light',
+      tokenOverrides: legacyOverrides || {}
+    };
+
+    return {
+      id: 'workspace-default',
+      name: 'Default Workspace',
+      activeThemeId: DEFAULT_THEME_ID,
+      themes: [defaultTheme]
+    };
   };
+
+  const [workspace, setWorkspace] = useState(loadWorkspaceState);
+
+  const getThemeHelper = () => window.DesignSystemStudioTheme || window.ThemeInit;
+
+  // Derive active theme & active token overrides from workspace model
+  const activeTheme = workspace.themes.find((t) => t.id === workspace.activeThemeId) || workspace.themes[0];
+  const themeMode = activeTheme.mode || (getThemeHelper() ? getThemeHelper().get() : 'light');
+
+  // Sync workspace state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('design-system-studio-workspace', JSON.stringify(workspace));
+    } catch (e) {}
+  }, [workspace]);
+
+  // Keep theme manager sync with activeTheme.mode
+  const toggleTheme = () => {
+    const nextMode = themeMode === 'dark' ? 'light' : 'dark';
+    const helper = getThemeHelper();
+    const updatedMode = helper ? helper.set(nextMode) : nextMode;
+
+    setWorkspace((prev) => ({
+      ...prev,
+      themes: prev.themes.map((t) =>
+        t.id === prev.activeThemeId ? { ...t, mode: updatedMode } : t
+      )
+    }));
+  };
+
+  const theme = themeMode;
+
   useEffect(() => {
     const ids = NAV.filter((n) => n[1]).map((n) => n[1]);
     const io = new IntersectionObserver((entries) => {
@@ -468,8 +540,8 @@ function App() {
       React.createElement('div', { style: { maxWidth: 960, margin: '0 auto', padding: '72px 56px 120px' } },
         /* overview */
         React.createElement('section', { id: 'overview', style: { scrollMarginTop: 24, marginBottom: 88 } },
-          React.createElement(Eyebrow, { size: 12, style: { marginBottom: 20 } }, 'Design System Studio · Advocacy Marketing Platform'),
-          React.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontSize: 72, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 0.95, color: 'var(--text-primary)', margin: 0 } }, 'The Design System Studio', React.createElement('br'), 'Design System.'),
+          React.createElement(Eyebrow, { size: 12, style: { marginBottom: 20 } }, 'Design System Studio'),
+          React.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontSize: 72, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 0.95, color: 'var(--text-primary)', margin: 0 } }, 'Design Systems,', React.createElement('br'), 'Built Better.'),
           React.createElement('p', { style: { fontSize: 19, lineHeight: 1.6, color: 'var(--text-secondary)', maxWidth: 620, marginTop: 24 } }, 'One source of truth for every Design System Studio screen, presentation, and component. Emerald-led, light-mode, editorial. Tokens copy straight to code and export to Figma variables.'),
           React.createElement('div', { style: { display: 'flex', gap: 40, marginTop: 40, flexWrap: 'wrap' } },
             [['18','Components'],['182','Design tokens'],['14','Slide templates'],['3','Type families']].map(([n, l]) => React.createElement('div', { key: l },
@@ -503,5 +575,5 @@ function App() {
       toastNode));
 }
 const __rootEl = document.getElementById('root');
-window.__design-system-studioDSRoot = window.__design-system-studioDSRoot || ReactDOM.createRoot(__rootEl);
-window.__design-system-studioDSRoot.render(React.createElement(App));
+window.DesignSystemStudioDSRoot = window.DesignSystemStudioDSRoot || ReactDOM.createRoot(__rootEl);
+window.DesignSystemStudioDSRoot.render(React.createElement(App));
