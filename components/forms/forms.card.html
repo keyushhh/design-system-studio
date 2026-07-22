@@ -1,0 +1,41 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Forms · Inputs & selection controls" subtitle="Text fields, select, checkbox, radio, switch, upload" -->
+<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="../../theme-init.js"></script><link rel="stylesheet" href="../../styles.css">
+<style>body{margin:0;background:var(--surface-canvas);font-family:var(--font-sans);color:var(--text-primary)}
+#r{padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.lab{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-faint);margin-bottom:12px}
+.stack{display:flex;flex-direction:column;gap:14px}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body><div id="r"></div>
+<script type="text/babel">
+const { Input, UploadZone, Select, Checkbox, Radio, Switch } = window.Design System StudioDesignSystem_e71b95;
+function Demo(){
+ const [c,setC]=React.useState(true),[r,setR]=React.useState('partners'),[s,setS]=React.useState(true);
+ return(
+<>
+ <div><div className="lab">Inputs - default · focus halo · error · disabled</div>
+  <div className="stack">
+   <Input label="Deck title" defaultValue="Partner Advocacy Program" />
+   <Input label="Contact email" defaultValue="hello@" error="Enter a valid email" />
+   <Select label="Template" options={['Business Record','Executive Brief','Proposal']} defaultValue="Business Record" />
+  </div>
+ </div>
+ <div><div className="lab">Selection controls</div>
+  <div className="stack">
+   <Checkbox label="Enable per-partner leaderboards" checked={c} onChange={()=>setC(!c)} />
+   <Checkbox label="Indeterminate" indeterminate />
+   <div style={{display:'flex',gap:20}}>
+    <Radio label="Partners" name="a" checked={r==='partners'} onChange={()=>setR('partners')} />
+    <Radio label="Employees" name="a" checked={r==='employees'} onChange={()=>setR('employees')} />
+   </div>
+   <Switch label="Redirection on share" checked={s} onChange={()=>setS(!s)} />
+   <UploadZone filename="planview-business-record.md" />
+  </div>
+ </div>
+</>);}
+ReactDOM.createRoot(document.getElementById('r')).render(<Demo/>);
+</script>
+</body></html>

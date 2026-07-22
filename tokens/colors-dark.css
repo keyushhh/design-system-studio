@@ -1,0 +1,94 @@
+/* ============================================================
+   DESIGN_SYSTEM_STUDIO - DARK THEME OVERRIDES
+   Opt-in dark variant. Activated by data-theme="dark" on the
+   root element (set by theme-init.js from a saved preference).
+
+   Strategy: remap the raw neutral ladder to a purpose-built dark
+   scale so the bulk of the UI and the neutral-based semantic
+   aliases cascade automatically; then override only the tokens
+   that reference pure white/black, brand tints, or are meant to
+   stay "inverse". Emerald stays the single accent, bumped one
+   step lighter where it must read as text on a dark surface.
+   ============================================================ */
+
+:root[data-theme="dark"] {
+  color-scheme: dark; /* native form controls, scrollbars, date pickers */
+
+  /* ---- Dark neutral ladder (0 = deepest, 950 = brightest) ----
+     Purpose-built, not a literal inversion. Because the semantic
+     aliases in colors.css reference these, most of them re-resolve
+     correctly with no further work. */
+  --neutral-0:   #0a0a0a;
+  --neutral-50:  #111111;  /* app canvas        (light: #fbfbfb) */
+  --neutral-100: #1a1a1a;  /* sunken / hover     (light: #f5f5f5) */
+  --neutral-150: #1f1f1f;
+  --neutral-200: #2a2a2a;  /* hairline borders   (light: #e5e5e5) */
+  --neutral-300: #3a3a3a;  /* strong borders     (light: #d4d4d4) */
+  --neutral-400: #757575;  /* faint text (AA large) (light: #a3a3a3) */
+  --neutral-500: #8a8a8a;  /* muted text         (light: #737373) */
+  --neutral-600: #a8a8a8;  /* secondary text     (light: #525252) */
+  --neutral-700: #c8c8c8;
+  --neutral-800: #e2e2e2;
+  --neutral-900: #f2f2f2;  /* primary text       (light: #171717) */
+  --neutral-950: #fafafa;
+
+  /* ---- Surfaces that referenced pure white ----
+     Cards must sit ABOVE the canvas, so raise them a step. */
+  --surface-default: var(--neutral-100);  /* cards, panels */
+  --surface-subtle:  #1a1917;             /* warm dark editorial panel */
+  --surface-sunken:  var(--neutral-50);   /* wells, inputs, below cards */
+  /* --surface-canvas (neutral-50) and --surface-inverse (neutral-900)
+     cascade correctly from the ladder above. */
+
+  /* ---- Text that referenced pure white / black ----
+     On the (now light) inverse surface, inverse text must be dark. */
+  --text-inverse: var(--neutral-0);
+  /* --text-on-brand stays white: white on emerald reads in both modes. */
+
+  /* ---- Borders ---- */
+  --border-inverse: rgba(0, 0, 0, 0.24);
+
+  /* ---- Brand accent ----
+     Solid emerald surfaces stay 500/600; anything that reads as
+     TEXT or a thin line on dark bumps one step lighter for contrast. */
+  --text-brand:         var(--brand-400);
+  --text-link:          var(--brand-400);
+  --text-link-hover:    var(--brand-300);
+  --action-brand:       var(--brand-500);
+  --action-brand-hover: var(--brand-400);
+  --focus-ring:         var(--brand-400);
+
+  /* ============================================================
+     COLORED SCALES STAY CANONICAL
+     The brand / accent / semantic ramps are the brand's source of
+     truth and are NOT re-tinted in dark mode - exactly like the
+     Master Template Generator (which overrides only neutrals and
+     does subtle emerald as color-mix overlays). Keeping them intact
+     means the reference scales read as proper, monotonic gradients
+     and solid accents / gradients never break. Subtle emerald fills
+     are done below as low-alpha overlays that sit correctly on any
+     dark surface.
+     ============================================================ */
+  --surface-brand-subtle: color-mix(in srgb, var(--brand-500) 14%, transparent);
+  --action-brand-subtle:  color-mix(in srgb, var(--brand-500) 14%, transparent);
+  --state-selected:       color-mix(in srgb, var(--brand-500) 18%, transparent);
+  --state-selected-fg:    var(--brand-300);
+
+  /* ---- Ambient background (grid + glow) ----
+     Faint grid line + a soft, low-intensity emerald orb. Kept much
+     gentler than a full slide glow so it reads as a subtle ambient
+     wash rather than a harsh spotlight. */
+  --grid-line-color: rgba(255, 255, 255, 0.055);
+  --glow-bg: radial-gradient(circle, rgba(16, 185, 129, 0.13) 0%, rgba(16, 185, 129, 0.05) 45%, transparent 70%);
+  --glow-filter: blur(45px);
+
+  /* ---- Elevation ----
+     Shadows read faintly on dark; deepen them and lean on borders. */
+  --shadow-xs:   0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-sm:   0 1px 3px rgb(0 0 0 / 0.5);
+  --shadow-md:   0 4px 6px rgb(0 0 0 / 0.5);
+  --shadow-lg:   0 10px 15px rgb(0 0 0 / 0.55);
+  --shadow-xl:   0 20px 25px rgb(0 0 0 / 0.6);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 32px -12px rgba(0, 0, 0, 0.7);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.5), 0 24px 48px -16px rgba(0, 0, 0, 0.8);
+}

@@ -1,0 +1,81 @@
+/* ============================================================
+   DESIGN_SYSTEM_STUDIO - SPACING, RADIUS, ELEVATION, BORDERS, MOTION, LAYOUT
+   Foundations shared by the app shell and the presentation.
+   ============================================================ */
+
+:root {
+  /* ---- Spacing scale (rem) ---- */
+  --space-0:  0px;
+  --space-1:  0.25rem;  /* 4 */
+  --space-2:  0.5rem;   /* 8 */
+  --space-3:  0.75rem;  /* 12 */
+  --space-4:  1rem;     /* 16 */
+  --space-5:  1.25rem;  /* 20 */
+  --space-6:  1.5rem;   /* 24 */
+  --space-8:  2rem;     /* 32 */
+  --space-10: 2.5rem;   /* 40 */
+  --space-12: 3rem;     /* 48 */
+  --space-16: 4rem;     /* 64 */
+  --space-20: 5rem;     /* 80 */
+  --space-24: 6rem;     /* 96 */
+
+  /* ---- Radius scale ----
+     The Master Template Generator ships with SHARP corners
+     (--radius-sharp: 0) as its default editorial feel; the
+     marketing surfaces use the soft scale below. */
+  --radius-sharp: 0px;
+  --radius-sm:   0.375rem;  /* 6  - inputs, small controls */
+  --radius-md:   0.5rem;    /* 8  - buttons, chips */
+  --radius-lg:   0.75rem;   /* 12 - cards */
+  --radius-xl:   1rem;      /* 16 - large cards, dialogs */
+  --radius-2xl:  1.5rem;    /* 24 - feature panels */
+  --radius-full: 9999px;    /* pills, avatars, dots */
+
+  /* ---- Elevation · Shadows ----
+     Interface leans on spacing + contrast; shadows stay soft
+     and rare. Two editorial lifts for the presentation. */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.1);
+  --shadow-soft: 0 1px 2px rgba(15,23,20,0.04), 0 12px 32px -12px rgba(15,23,20,0.10);
+  --shadow-lift: 0 2px 4px rgba(15,23,20,0.05), 0 24px 48px -16px rgba(15,23,20,0.16);
+
+  /* ---- Borders ---- */
+  --border-width-none:     0px;
+  --border-width-hairline: 1px;
+  --border-width-medium:   2px;
+  --border-width-thick:    4px;
+
+  /* ---- Motion ---- */
+  --duration-instant: 0ms; /* @kind other */
+  --duration-fast:    150ms; /* @kind other */
+  --duration-normal:  200ms; /* @kind other */
+  --duration-slow:    300ms; /* @kind other */
+  --duration-slower:  500ms; /* @kind other */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1); /* @kind other */
+  --ease-entrance: cubic-bezier(0, 0, 0.2, 1); /* @kind other */
+  --ease-exit:     cubic-bezier(0.4, 0, 1, 1); /* @kind other */
+
+  /* ---- Layout ---- */
+  --sidebar-width: 236px;
+  --content-max:   1180px;
+  --page-margin:   40px;
+
+  /* ---- Presentation geometry ---- */
+  --slide-width:  1920px;
+  --slide-height: 1080px;
+  --slide-pad-x:  140px;  /* editorial left/right margin */
+  --slide-pad-y:  160px;  /* editorial top/bottom margin */
+  --slide-hud-inset: 80px;
+
+  /* ---- Z-index philosophy (few, well-named layers) ---- */
+  --z-base:     0; /* @kind other */
+  --z-content:  10; /* @kind other */
+  --z-sticky:   50; /* @kind other */
+  --z-sidebar:  100; /* @kind other */
+  --z-overlay:  200; /* @kind other */
+  --z-modal:    300; /* @kind other */
+  --z-toast:    400; /* @kind other */
+}

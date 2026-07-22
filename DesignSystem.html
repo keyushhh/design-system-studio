@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System Studio</title>
+<script src="theme-init.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background-color:var(--surface-canvas);background-image:linear-gradient(var(--grid-line-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line-color) 1px,transparent 1px);background-size:var(--grid-cell-size,120px) var(--grid-cell-size,120px);font-family:var(--font-sans);color:var(--text-primary);-webkit-font-smoothing:antialiased}
+/* Ambient emerald orbs - a soft branded glow behind the whole system,
+   over a faint editorial grid. Fixed + blurred; the sidebar's solid
+   surface sits over them, the scrolling content lets them breathe. */
+body::before,body::after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+body::before{top:-18vh;right:-12vw;width:60vw;height:60vw;background:radial-gradient(circle,color-mix(in srgb,var(--brand-500) 15%,transparent) 0%,transparent 70%)}
+body::after{bottom:-22vh;left:-10vw;width:52vw;height:52vw;background:radial-gradient(circle,color-mix(in srgb,var(--brand-600) 12%,transparent) 0%,transparent 70%)}
+:root[data-theme="dark"] body::before{width:40vw;height:40vw;background:radial-gradient(circle,color-mix(in srgb,var(--brand-500) 9%,transparent) 0%,transparent 70%)}
+:root[data-theme="dark"] body::after{width:34vw;height:34vw;background:radial-gradient(circle,color-mix(in srgb,var(--brand-400) 6%,transparent) 0%,transparent 70%)}
+#root{height:100vh;position:relative;z-index:1}
+a{color:var(--text-link)}a:hover{color:var(--text-link-hover)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--neutral-100)}
+::-webkit-scrollbar-thumb{background:var(--neutral-300);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--neutral-400)}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="_ds_bundle.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#10b981"/><text x="50" y="62" font-family="Space Grotesk, sans-serif" font-size="46" font-weight="700" fill="#fff" text-anchor="middle">S</text></svg></template>
+<div id="root"></div>
+<script type="text/babel" src="designsystem.app.jsx"></script>
+<script src="grid-hover.js"></script>
+</body>
+</html>

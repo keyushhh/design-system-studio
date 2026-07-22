@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="omelette-owns-print" content="true">
+<title>Design System Studio - Brand Guidelines</title>
+<script src="theme-init.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#c9c9c9;font-family:var(--font-sans);color:var(--neutral-900);-webkit-font-smoothing:antialiased}
+.book{display:flex;flex-direction:column;align-items:center;gap:40px;padding:48px 24px 90px}
+.page{width:1200px;height:750px;background:#fff;position:relative;overflow:hidden;box-shadow:0 2px 4px rgba(15,23,20,.05),0 24px 48px -16px rgba(15,23,20,.18)}
+.pad{padding:64px 72px}
+.eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-600);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:var(--brand-500)}
+.foot{position:absolute;left:72px;right:72px;bottom:34px;display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-400)}
+.disp{font-family:var(--font-display);letter-spacing:-.03em;line-height:.95}
+.mono{font-family:var(--font-mono)}
+.desc{font-size:12.5px;line-height:1.7;color:var(--neutral-600)}
+.desc h5{font-family:var(--font-sans);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--neutral-900);margin:18px 0 6px}
+.desc h5:first-child{margin-top:0}
+.col-label{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-400);margin-bottom:20px}
+
+/* ---------- 01 Cover ---------- */
+.cover{background:linear-gradient(150deg,var(--brand-500),var(--brand-800) 88%);color:#fff}
+.cover .wave{position:absolute;inset:0;opacity:.5}
+.cover .wave path{fill:none;stroke:rgba(255,255,255,.14);stroke-width:2}
+.cover .brand{position:absolute;top:56px;left:72px;display:flex;align-items:center;gap:10px;z-index:2}
+.cover .brand img{height:34px}
+.cover-t{position:absolute;left:72px;bottom:120px;z-index:2}
+.cover-t h1{font-family:var(--font-display);font-weight:700;font-size:104px;line-height:.92;letter-spacing:-.03em}
+.cover .cfoot{position:absolute;left:72px;right:72px;bottom:44px;display:flex;justify-content:space-between;z-index:2;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+
+/* ---------- Chapter opener ---------- */
+.chapter{background:var(--neutral-950);color:#fff}
+.chapter .num{font-family:var(--font-display);font-size:96px;font-weight:700;letter-spacing:-.03em}
+.chapter .big{font-family:var(--font-display);font-size:120px;font-weight:700;line-height:.9;letter-spacing:-.03em;margin-top:220px}
+.chapter .toc{position:absolute;top:72px;right:72px;text-align:left;width:230px}
+.chapter .toc div{display:flex;gap:10px;align-items:baseline;font-size:14px;color:rgba(255,255,255,.75);padding:9px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.chapter .toc div::before{content:"→";color:var(--brand-400)}
+
+/* type showcase */
+.type-grid{display:grid;grid-template-columns:0.9fr 1.5fr;gap:44px;margin-top:26px}
+.showcase{background:linear-gradient(150deg,var(--brand-600),var(--brand-800));border-radius:0;color:#fff;padding:44px 40px;position:relative;overflow:hidden}
+.showcase .ghost{position:absolute;right:14px;bottom:-30px;font-family:var(--font-display);font-size:260px;font-weight:700;color:rgba(255,255,255,.06);line-height:1}
+.showcase h3{font-family:var(--font-display);font-weight:700;font-size:56px;letter-spacing:-.02em;position:relative;z-index:2}
+.type-row{display:grid;grid-template-columns:90px 1fr;gap:16px;padding:20px 0;border-top:1px solid rgba(255,255,255,.18);position:relative;z-index:2}
+.type-row .l{font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;opacity:.8;padding-top:4px}
+.type-row .s{font-size:15px;line-height:1.55}
+
+/* hierarchy */
+.hier{display:grid;grid-template-columns:250px 1fr;gap:52px;margin-top:26px}
+.spec{padding:15px 0;border-top:1px solid var(--neutral-150)}
+.spec:first-child{border-top:none}
+.spec .n{font-family:var(--font-display);font-weight:600;font-size:13.5px;margin-bottom:4px}
+.spec .m{font-family:var(--font-mono);font-size:10px;color:var(--neutral-500);letter-spacing:.02em}
+
+/* logo */
+.logo-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:44px;margin-top:26px}
+.logo-card{height:210px;display:flex;align-items:center;justify-content:center;position:relative}
+.logo-card.on-brand{background:linear-gradient(135deg,var(--brand-700),var(--brand-900))}
+.logo-card.on-light{background:var(--neutral-50);border:1px solid var(--neutral-200)}
+.logo-card img{height:52px}
+.logo-card .tag{position:absolute;top:14px;left:16px;font-family:var(--font-mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase}
+.logo-card.on-brand .tag{color:rgba(255,255,255,.7)}
+.logo-card.on-light .tag{color:var(--neutral-400)}
+.smallest{margin-top:22px;display:flex;align-items:center;gap:14px;font-family:var(--font-mono);font-size:11px;color:var(--neutral-500)}
+.smallest img{height:16px}
+
+/* colour palette */
+.pal{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px;height:430px}
+.pcard{border:1px solid var(--neutral-200);display:flex;flex-direction:column;justify-content:space-between;padding:22px 20px}
+.pcard .top .name{font-family:var(--font-display);font-weight:600;font-size:16px}
+.pcard .top .role{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-top:3px}
+.pcard .specs{font-family:var(--font-mono);font-size:11px;line-height:1.9}
+.pcard .specs b{display:block;font-size:9px;opacity:.6;font-weight:400;text-transform:uppercase;letter-spacing:.06em;margin-top:9px}
+
+/* shades */
+.shades{margin-top:30px;display:flex;flex-direction:column;gap:18px}
+.srow{display:flex;gap:14px;align-items:center}
+.dot{width:52px;height:52px;border-radius:50%;flex-shrink:0}
+.srow .cap{font-family:var(--font-mono);font-size:11px;color:var(--neutral-500);width:150px;flex-shrink:0}
+
+/* key elements */
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:26px}
+.kcard{border:1px solid var(--neutral-200);padding:22px}
+.kvis{height:150px;border-radius:0;overflow:hidden;position:relative;background:var(--neutral-50);display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px}
+.kcard h4{font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--neutral-900);margin-bottom:8px}
+.kcard p{font-size:12px;line-height:1.6;color:var(--neutral-500)}
+.radii i{display:block;width:44px;height:44px;background:var(--brand-500)}
+.radii i:nth-child(1){border-radius:0}
+.radii i:nth-child(2){border-radius:8px}
+.radii i:nth-child(3){border-radius:16px}
+.shadowbox{width:150px;height:90px;background:#fff;border:1px solid var(--neutral-150);box-shadow:0 2px 4px rgba(15,23,20,.05),0 24px 48px -16px rgba(15,23,20,.16)}
+.patt{width:100%;height:100%;background:linear-gradient(150deg,var(--brand-500),var(--brand-800))}
+
+/* grid */
+.gridpage{background:#fff}
+.gridovl{position:absolute;inset:56px;display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.gridovl div{background:color-mix(in srgb,var(--brand-500) 10%,transparent);border:1px solid color-mix(in srgb,var(--brand-500) 22%,transparent)}
+
+/* ---------- Ambient emerald orbs ---------- */
+body::before,body::after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+body::before{top:-16vh;right:-10vw;width:52vw;height:52vw;background:radial-gradient(circle,color-mix(in srgb,var(--brand-500) 12%,transparent),transparent 70%)}
+body::after{bottom:-20vh;left:-8vw;width:46vw;height:46vw;background:radial-gradient(circle,color-mix(in srgb,var(--brand-600) 10%,transparent),transparent 70%)}
+:root[data-theme="dark"] body::before{background:radial-gradient(circle,color-mix(in srgb,var(--brand-500) 22%,transparent),transparent 70%)}
+:root[data-theme="dark"] body::after{background:radial-gradient(circle,color-mix(in srgb,var(--brand-400) 15%,transparent),transparent 70%)}
+.book{position:relative;z-index:1}
+.backbar{z-index:100}
+
+/* ---------- Dark edition ----------
+   White "paper" pages go dark so the token-driven text (which flips
+   light) stays readable; the emerald cover / gradient panels keep
+   their deep brand look. */
+:root[data-theme="dark"] body{background:#0a0a0a}
+:root[data-theme="dark"] .page:not(.cover):not(.chapter){background:#161616}
+:root[data-theme="dark"] .chapter{background:#000}
+:root[data-theme="dark"] .kvis{background:#111}
+:root[data-theme="dark"] .shadowbox{background:#f2f2f2}
+:root[data-theme="dark"] .pcard{border-color:rgba(255,255,255,.14)}
+:root[data-theme="dark"] .dot{box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+:root[data-theme="dark"] .backbar{background:#1a1a1a !important;box-shadow:0 2px 4px rgba(0,0,0,.5),0 12px 32px -12px rgba(0,0,0,.7) !important}
+/* keep the "on light" logo demo genuinely light so the black wordmark reads */
+:root[data-theme="dark"] .logo-card.on-light{background:#fbfbfb;border-color:#e5e5e5}
+:root[data-theme="dark"] .logo-card.on-light .tag{color:#737373}
+/* the "on brand" gradient uses --brand-700, which lightens in dark - pin it deep */
+:root[data-theme="dark"] .logo-card.on-brand{background:linear-gradient(135deg,#047857,#064e3b)}
+
+@media print{
+  @page{size:1200px 750px;margin:0}
+  html,body{background:#fff}
+  .book{padding:0;gap:0}
+  .page{box-shadow:none;page-break-after:always;break-after:page}
+  .backbar{display:none !important}
+  body::before,body::after{display:none !important}
+}
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#10b981"/><text x="50" y="62" font-family="Space Grotesk, sans-serif" font-size="40" font-weight="700" fill="#fff" text-anchor="middle">W</text></svg></template>
+<a class="backbar" href="DesignSystem.html" style="position:fixed;top:20px;left:20px;z-index:100;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:var(--neutral-900);color:#fff;font-family:var(--font-sans);font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 4px rgba(15,23,20,.08),0 12px 32px -12px rgba(15,23,20,.2)"><span style="font-size:16px;line-height:1">←</span> Design System</a>
+<div class="book">
+
+  <!-- 01 COVER -->
+  <section class="page cover">
+    <svg class="wave" viewBox="0 0 1200 750" preserveAspectRatio="none">
+      <path d="M-50 220 Q 300 120 600 240 T 1250 220"/>
+      <path d="M-50 320 Q 300 220 600 340 T 1250 320"/>
+      <path d="M-50 420 Q 300 320 600 440 T 1250 420"/>
+      <path d="M-50 520 Q 300 420 600 540 T 1250 520"/>
+    </svg>
+    <div class="brand"><img src="assets/logo-white.png" alt="Design System Studio"></div>
+    <div class="cover-t"><h1>BRAND<br>GUIDELINES</h1></div>
+    <div class="cfoot"><span>Design System Studio · Visual Identity Manual</span><span>Version 1.0 · 2026</span></div>
+  </section>
+
+  <!-- 02 CHAPTER OPENER -->
+  <section class="page chapter">
+    <div class="pad" style="height:100%;display:flex;flex-direction:column;justify-content:flex-start">
+      <div class="num">03</div>
+      <div class="toc">
+        <div>Typeface</div>
+        <div>Type Hierarchy</div>
+      </div>
+      <div class="big">TYPO-<br>GRAPHY</div>
+    </div>
+    <div class="foot" style="color:rgba(255,255,255,.4)"><span>Chapter 03</span><span>Typography</span></div>
+  </section>
+
+  <!-- 03 TYPOGRAPHY -->
+  <section class="page">
+    <div class="pad">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Typography</h2>
+      <div class="type-grid">
+        <div class="desc">
+          <h5>Typeface</h5>
+          Typography is a core part of Design System Studio's visual identity. Our type system is built around clarity, consistency, and modern digital experiences - a defined role for each face that creates hierarchy while staying cohesive across products, marketing, and documentation.
+          <h5>Primary - Space Grotesk</h5>
+          Display, headlines, and large editorial titles. Set tight for a confident, modern voice.
+          <h5>Secondary - Satoshi</h5>
+          The default interface and body typeface - navigation, forms, components, and paragraphs. Chosen for excellent readability on screen.
+          <h5>Tertiary - JetBrains Mono</h5>
+          Reserved for labels, metadata, status, numbers, IDs, and technical information.
+        </div>
+        <div class="showcase">
+          <div class="ghost">Aa</div>
+          <h3>Space Grotesk</h3>
+          <div class="type-row"><div class="l">Medium</div><div class="s">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>1234567890 &amp;#$€%@!?*</div></div>
+          <div class="type-row"><div class="l">SemiBold</div><div class="s" style="font-weight:600">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>1234567890 &amp;#$€%@!?*</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 03</span></div>
+  </section>
+
+  <!-- 04 TYPE HIERARCHY -->
+  <section class="page">
+    <div class="pad">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Type Hierarchy</h2>
+      <div class="hier">
+        <div>
+          <div class="spec"><div class="n">Headline 1 · Display</div><div class="m">Space Grotesk · 700 · 96px / 0.85 · −0.05em</div></div>
+          <div class="spec"><div class="n">Headline 2</div><div class="m">Space Grotesk · 600 · 48px / 1.0 · −0.03em</div></div>
+          <div class="spec"><div class="n">Headline 3</div><div class="m">Space Grotesk · 600 · 30px / 1.1 · −0.02em</div></div>
+          <div class="spec"><div class="n">Body · Large</div><div class="m">Satoshi · 400 · 18px / 1.6 · 0</div></div>
+          <div class="spec"><div class="n">Body</div><div class="m">Satoshi · 400 · 16px / 1.6 · 0</div></div>
+          <div class="spec"><div class="n">Label · Mono</div><div class="m">JetBrains Mono · 500 · 12px · 0.12em · UPPER</div></div>
+        </div>
+        <div>
+          <h3 class="disp" style="font-size:44px;font-weight:700;margin-bottom:20px">We don't just amplify content; we activate advocates.</h3>
+          <p style="font-size:18px;line-height:1.6;color:var(--neutral-700);margin-bottom:14px">Building an advocacy program is a coordinated effort that spans employees, customers, and partners across every professional network.</p>
+          <h4 class="disp" style="font-size:20px;font-weight:600;color:var(--brand-700);margin-bottom:8px">Need help choosing a face?</h4>
+          <p style="font-size:13px;line-height:1.6;color:var(--neutral-500)">Space Grotesk leads. Satoshi carries the reading. JetBrains Mono handles the metadata. Three roles, one voice.</p>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 04</span></div>
+  </section>
+
+  <!-- 05 LOGO -->
+  <section class="page">
+    <div class="pad">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Logo</h2>
+      <div class="logo-grid">
+        <div class="desc">
+          <h5>Primary variants</h5>
+          Use the wordmark on a dark or light background. On imagery, keep the logo sufficiently legible against the backdrop. The smallest size for print and on-screen use is based on the height of the mark.
+          <h5>Clear space</h5>
+          Preserve clear space equal to the height of the "W" mark on all sides. Never crowd, recolor, or distort the wordmark.
+        </div>
+        <div>
+          <div class="logo-card on-brand"><span class="tag">On brand / reversed</span><img src="assets/logo-white.png" alt="Design System Studio"></div>
+          <div class="logo-card on-light" style="margin-top:16px"><span class="tag">On light / primary</span><img src="assets/logo-black.png" alt="Design System Studio"></div>
+          <div class="smallest">Smallest logo size 128px · <img src="assets/logo-black.png" alt="Design System Studio"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 05</span></div>
+  </section>
+
+  <!-- 06 COLOUR PALETTE -->
+  <section class="page">
+    <div class="pad">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Colour Palette</h2>
+      <p class="desc" style="max-width:640px;margin-top:10px">Only the colours listed in the core Brand Guidelines may be used in the visual style. Emerald is the canonical brand colour; everything else stays neutral so the accent carries meaning.</p>
+      <div class="pal">
+        <div class="pcard" style="background:var(--brand-500);color:#fff">
+          <div class="top"><div class="name">Emerald</div><div class="role">Primary</div></div>
+          <div class="specs">--brand-500<b>Hex</b>#10B981<b>RGB</b>16 · 185 · 129</div>
+        </div>
+        <div class="pcard" style="background:var(--accent-500);color:#fff">
+          <div class="top"><div class="name">Leaf</div><div class="role">Secondary</div></div>
+          <div class="specs">--accent-500<b>Hex</b>#22C55E<b>RGB</b>34 · 197 · 94</div>
+        </div>
+        <div class="pcard" style="background:#0a0a0a;color:#fff">
+          <div class="top"><div class="name">Ink</div><div class="role">Black</div></div>
+          <div class="specs">--neutral-950<b>Hex</b>#0A0A0A<b>RGB</b>10 · 10 · 10</div>
+        </div>
+        <div class="pcard" style="background:#fff;color:#171717">
+          <div class="top"><div class="name">Paper</div><div class="role">White</div></div>
+          <div class="specs">--neutral-0<b>Hex</b>#FFFFFF<b>RGB</b>255 · 255 · 255</div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 06</span></div>
+  </section>
+
+  <!-- 07 SHADES PALETTE -->
+  <section class="page">
+    <div class="pad">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Shades Palette</h2>
+      <p class="desc" style="max-width:640px;margin-top:10px">Full 50–950 scales generated in the OKLCH perceptual colour space so lightness steps stay visually even. Use tints for surfaces and washes; deep shades for text and emphasis.</p>
+      <div class="shades">
+        <div class="srow"><span class="cap">Neutral</span>
+          <span class="dot" style="background:var(--neutral-50);border:1px solid var(--neutral-200)"></span>
+          <span class="dot" style="background:var(--neutral-200)"></span>
+          <span class="dot" style="background:var(--neutral-400)"></span>
+          <span class="dot" style="background:var(--neutral-600)"></span>
+          <span class="dot" style="background:var(--neutral-800)"></span>
+          <span class="dot" style="background:var(--neutral-950)"></span>
+        </div>
+        <div class="srow"><span class="cap">Emerald · Primary</span>
+          <span class="dot" style="background:var(--brand-50)"></span>
+          <span class="dot" style="background:var(--brand-200)"></span>
+          <span class="dot" style="background:var(--brand-400)"></span>
+          <span class="dot" style="background:var(--brand-500)"></span>
+          <span class="dot" style="background:var(--brand-700)"></span>
+          <span class="dot" style="background:var(--brand-900)"></span>
+        </div>
+        <div class="srow"><span class="cap">Leaf · Secondary</span>
+          <span class="dot" style="background:var(--accent-100)"></span>
+          <span class="dot" style="background:var(--accent-300)"></span>
+          <span class="dot" style="background:var(--accent-400)"></span>
+          <span class="dot" style="background:var(--accent-500)"></span>
+          <span class="dot" style="background:var(--accent-700)"></span>
+          <span class="dot" style="background:var(--accent-900)"></span>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 07</span></div>
+  </section>
+
+  <!-- 08 KEY ELEMENTS -->
+  <section class="page">
+    <div class="pad">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Key Elements</h2>
+      <div class="keys">
+        <div class="kcard">
+          <div class="kvis radii"><i></i><i></i><i></i></div>
+          <h4>Corner Radius</h4>
+          <p>Sharp (0) is the in-product default for an editorial feel; the soft scale (8 / 16px) is reserved for web surfaces.</p>
+        </div>
+        <div class="kcard">
+          <div class="kvis"><div class="shadowbox"></div></div>
+          <h4>Shadows</h4>
+          <p>Soft, rare shadows only; the interface leans on spacing and contrast, never heavy elevation.</p>
+        </div>
+        <div class="kcard">
+          <div class="kvis" style="padding:0"><div class="patt"></div></div>
+          <h4>Patterns &amp; Gradients</h4>
+          <p>A single restrained emerald gradient for cover and divider surfaces; hairline grids for structure. No aggressive multi-stop gradients.</p>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 08</span></div>
+  </section>
+
+  <!-- 09 GRID -->
+  <section class="page gridpage">
+    <div class="pad" style="position:relative;z-index:2">
+      <div class="eyebrow">Content Section</div>
+      <h2 class="disp" style="font-size:34px;font-weight:700;margin-top:12px">Layout Grid</h2>
+      <p class="desc" style="max-width:520px;margin-top:10px">A 12-column grid with 16px gutters underpins application layouts. Generous editorial margins and hairline rules separate zones; structure comes from whitespace, not boxes.</p>
+    </div>
+    <div class="gridovl" style="top:260px">
+      <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+    </div>
+    <div class="foot"><span>Design System Studio Brand Guidelines</span><span>Page 09</span></div>
+  </section>
+
+</div>
+</body>
+</html>

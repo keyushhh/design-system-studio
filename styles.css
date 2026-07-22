@@ -1,0 +1,12 @@
+/* ============================================================
+   DESIGN_SYSTEM_STUDIO DESIGN SYSTEM - global entry point
+   Consumers link THIS file only. It is a manifest of @imports;
+   no rules live here. Everything reachable from these imports
+   (tokens + @font-face) ships to consuming projects.
+   ============================================================ */
+
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/colors-dark.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";

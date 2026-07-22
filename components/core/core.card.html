@@ -1,0 +1,51 @@
+<!-- @dsCard group="Components" viewport="700x360" name="Core · Buttons, Badges, Card" subtitle="Actions, icon buttons, status pills, flat surfaces" -->
+<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="../../theme-init.js"></script><link rel="stylesheet" href="../../styles.css">
+<style>body{margin:0;background:var(--surface-canvas);font-family:var(--font-sans);color:var(--text-primary)}
+#r{padding:24px 28px;display:flex;flex-direction:column;gap:22px}
+.grp{display:flex;flex-direction:column;gap:10px}
+.lab{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-faint)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body><div id="r"></div>
+<script type="text/babel">
+const { Button, IconButton, Badge, Card } = window.Design System StudioDesignSystem_e71b95;
+function Demo(){return(
+<>
+ <div className="grp"><div className="lab">Buttons - variants</div><div className="row">
+   <Button variant="primary" iconLeft="upload">Upload Document</Button>
+   <Button variant="brand">Generate Deck</Button>
+   <Button variant="secondary" iconLeft="share">Share</Button>
+   <Button variant="outline" iconLeft="download">Export PDF</Button>
+   <Button variant="ghost">Cancel</Button>
+   <Button variant="danger">Confirm Reset?</Button>
+ </div></div>
+ <div className="grp"><div className="lab">Sizes · disabled · icon button</div><div className="row">
+   <Button size="sm">Small</Button>
+   <Button size="md">Medium</Button>
+   <Button size="lg">Large</Button>
+   <Button disabled>Disabled</Button>
+   <IconButton icon="eye" label="Hide" />
+   <IconButton icon="plus" label="Duplicate" />
+   <IconButton icon="trash" tone="danger" label="Delete" />
+ </div></div>
+ <div className="grp"><div className="lab">Badges</div><div className="row">
+   <Badge tone="brand">Primary</Badge>
+   <Badge tone="success" dot>Active</Badge>
+   <Badge tone="warning" variant="solid">Tentative</Badge>
+   <Badge tone="error">Overdue</Badge>
+   <Badge tone="info">Info</Badge>
+   <Badge tone="neutral" shape="square">Draft</Badge>
+ </div></div>
+ <div className="grp"><div className="lab">Cards</div><div className="row" style={{alignItems:'stretch'}}>
+   <Card style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>Default surface</div><div style={{color:'var(--text-muted)',fontSize:13,marginTop:4}}>Hairline border, flat.</div></Card>
+   <Card surface="subtle" radius="sharp" style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>Subtle · sharp</div><div style={{color:'var(--text-muted)',fontSize:13,marginTop:4}}>Editorial panel.</div></Card>
+   <Card elevation="soft" style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>Soft elevation</div><div style={{color:'var(--text-muted)',fontSize:13,marginTop:4}}>Raised card.</div></Card>
+ </div></div>
+</>);}
+ReactDOM.createRoot(document.getElementById('r')).render(<Demo/>);
+</script>
+</body></html>
