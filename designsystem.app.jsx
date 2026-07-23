@@ -274,6 +274,200 @@ function Panel({ children, style }) {
   return React.createElement('div', { style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)', padding: 28, ...style } }, children);
 }
 
+/* ========== ONBOARDING WIZARD COMPONENT ========== */
+function OnboardingWizard({ open, onClose, push }) {
+  const [step, setStep] = useState(1);
+  const [brandName, setBrandName] = useState('Design System Studio');
+  const [tagline, setTagline] = useState('Engineered for Speed');
+  const [archetype, setArchetype] = useState('editorial');
+  const [seedColor, setSeedColor] = useState('#10b981');
+  const [accentSeed, setAccentSeed] = useState('#22c55e');
+
+  if (!open) return null;
+
+  const archetypes = [
+    { id: 'editorial', name: 'Editorial Precision', desc: 'Sharp 0px corners, high contrast typography, ultra-dense data grids.', radius: '0px', font: 'Space Grotesk' },
+    { id: 'fintech', name: 'Fintech Minimal', desc: 'Clean 4px rounded edges, balanced Slate neutrals, focused data visualizers.', radius: '4px', font: 'Satoshi' },
+    { id: 'cyberpunk', name: 'Neon Cyberpunk', desc: 'High impact neon green accents, dark obsidian surfaces, monospaced HUD lines.', radius: '2px', font: 'JetBrains Mono' },
+    { id: 'craft', name: 'Warm Craft', desc: 'Smooth 8px pill contours, warm cream surfaces, organic brand highlights.', radius: '8px', font: 'Space Grotesk' },
+  ];
+
+  const presets = [
+    { id: 'emerald', name: 'Emerald', brand: '#10b981', accent: '#22c55e' },
+    { id: 'indigo', name: 'Electric Indigo', brand: '#6366f1', accent: '#818cf8' },
+    { id: 'violet', name: 'Ultra Violet', brand: '#8b5cf6', accent: '#a855f7' },
+    { id: 'rose', name: 'Neon Rose', brand: '#f43f5e', accent: '#fb7185' },
+    { id: 'amber', name: 'Solar Amber', brand: '#f59e0b', accent: '#fbbf24' },
+  ];
+
+  const finishSetup = () => {
+    const brandScale = generateScale(seedColor, 'brand');
+    Object.keys(brandScale).forEach(prop => document.documentElement.style.setProperty(prop, brandScale[prop]));
+    
+    const accentScale = generateScale(accentSeed, 'accent');
+    Object.keys(accentScale).forEach(prop => document.documentElement.style.setProperty(prop, accentScale[prop]));
+
+    const selectedArch = archetypes.find(a => a.id === archetype);
+    if (selectedArch) {
+      document.documentElement.style.setProperty('--radius-sharp', selectedArch.radius);
+    }
+
+    localStorage.setItem('ds-wizard-completed', 'true');
+    localStorage.setItem('ds-brand-name', brandName);
+    localStorage.setItem('ds-active-brand', seedColor);
+    localStorage.setItem('ds-active-accent', accentSeed);
+    window.dispatchEvent(new CustomEvent('ds-tokens-updated', { detail: { brand: seedColor, accent: accentSeed } }));
+
+    if (push) {
+      push({ title: 'Brand Setup Complete', message: `Initialized ${brandName} with ${selectedArch?.name} archetype!`, tone: 'brand' });
+    }
+    onClose();
+  };
+
+  return React.createElement('div', {
+    style: {
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(9, 9, 11, 0.82)', backdropFilter: 'blur(12px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
+    }
+  },
+    React.createElement('div', {
+      style: {
+        width: '100%', maxWidth: 680, background: 'var(--surface-default)',
+        border: '1px solid var(--border-strong)', boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.5)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden'
+      }
+    },
+      /* Header */
+      React.createElement('div', {
+        style: {
+          padding: '24px 32px 20px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface-default)'
+        }
+      },
+        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+          React.createElement(Badge, { tone: 'brand' }, `Step ${step} of 3`),
+          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' } },
+            step === 1 ? 'Brand Identity' : step === 2 ? 'System Archetype' : 'Color Palette'
+          )
+        ),
+        React.createElement('button', {
+          onClick: onClose,
+          style: { background: 'transparent', border: '1px solid var(--border-default)', padding: 6, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+          onMouseEnter: e => e.currentTarget.style.borderColor = 'var(--border-strong)',
+          onMouseLeave: e => e.currentTarget.style.borderColor = 'var(--border-default)'
+        }, React.createElement(Icon, { name: 'x', size: 16 }))
+      ),
+      /* Progress Track */
+      React.createElement('div', { style: { height: 2, background: 'var(--border-subtle)', width: '100%' } },
+        React.createElement('div', { style: { height: '100%', width: `${(step / 3) * 100}%`, background: 'var(--brand-500)', transition: 'width 300ms ease' } })
+      ),
+      /* Body Content */
+      React.createElement('div', { style: { padding: '36px 32px 40px', flex: 1, overflowY: 'auto' } },
+        step === 1 && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 28 } },
+          React.createElement('div', null,
+            React.createElement('h3', { style: { fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, margin: '0 0 10px', letterSpacing: '-0.03em', color: 'var(--text-primary)' } }, 'Welcome to Design System Studio'),
+            React.createElement('p', { style: { fontSize: 15, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6, maxWidth: 540 } }, 'Set up your project name and archetype motto to initialize core tokens across the entire studio.')
+          ),
+          React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 20 } },
+            React.createElement(Input, { label: 'Brand Name', value: brandName, onChange: e => setBrandName(e.target.value), placeholder: 'e.g. Acme Studio' }),
+            React.createElement(Input, { label: 'Tagline / Motto', value: tagline, onChange: e => setTagline(e.target.value), placeholder: 'e.g. Engineered for Speed' })
+          )
+        ),
+        step === 2 && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 24 } },
+          React.createElement('div', null,
+            React.createElement('h3', { style: { fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.02em', color: 'var(--text-primary)' } }, 'Choose Design Archetype'),
+            React.createElement('p', { style: { fontSize: 14, color: 'var(--text-secondary)', margin: 0 } }, 'Select the foundational aesthetic rules for component radii and typography:')
+          ),
+          React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 } },
+            archetypes.map(a => React.createElement('div', {
+              key: a.id,
+              onClick: () => setArchetype(a.id),
+              style: {
+                padding: 20, border: archetype === a.id ? '2px solid var(--brand-500)' : '1px solid var(--border-default)',
+                background: archetype === a.id ? 'var(--state-selected)' : 'var(--surface-default)',
+                cursor: 'pointer', transition: 'all 150ms ease', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+              }
+            },
+              React.createElement('div', null,
+                React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+                  React.createElement('span', { style: { fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' } }, a.name),
+                  archetype === a.id && React.createElement(Badge, { tone: 'brand' }, 'Active')
+                ),
+                React.createElement('p', { style: { fontSize: 12.5, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 } }, a.desc)
+              ),
+              React.createElement('div', { style: { marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border-subtle)', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } },
+                `Corner: ${a.radius}  ·  Font: ${a.font}`
+              )
+            ))
+          )
+        ),
+        step === 3 && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 24 } },
+          React.createElement('div', null,
+            React.createElement('h3', { style: { fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.02em', color: 'var(--text-primary)' } }, 'Palette & Color Scale'),
+            React.createElement('p', { style: { fontSize: 14, color: 'var(--text-secondary)', margin: 0 } }, 'Pick a curated brand preset or define your custom HSL seeds:')
+          ),
+          React.createElement('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+            presets.map(p => React.createElement('button', {
+              key: p.id,
+              onClick: () => { setSeedColor(p.brand); setAccentSeed(p.accent); },
+              style: {
+                padding: '8px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em',
+                border: seedColor === p.brand ? '2px solid var(--brand-500)' : '1px solid var(--border-default)',
+                background: seedColor === p.brand ? 'var(--state-selected)' : 'var(--surface-default)',
+                color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
+              }
+            },
+              React.createElement('span', { style: { width: 12, height: 12, borderRadius: '50%', background: p.brand } }),
+              p.name
+            ))
+          ),
+          React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 } },
+            React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Primary Seed Color'),
+              React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
+                React.createElement('div', { style: { position: 'relative', width: 40, height: 40, background: seedColor, border: '1px solid var(--border-default)' } },
+                  React.createElement('input', { type: 'color', value: seedColor, onChange: e => setSeedColor(e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+                ),
+                React.createElement('input', { type: 'text', value: seedColor, onChange: e => setSeedColor(e.target.value), style: { flex: 1, height: 40, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 13, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', outline: 'none' } })
+              )
+            ),
+            React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Accent Seed Color'),
+              React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
+                React.createElement('div', { style: { position: 'relative', width: 40, height: 40, background: accentSeed, border: '1px solid var(--border-default)' } },
+                  React.createElement('input', { type: 'color', value: accentSeed, onChange: e => setAccentSeed(e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+                ),
+                React.createElement('input', { type: 'text', value: accentSeed, onChange: e => setAccentSeed(e.target.value), style: { flex: 1, height: 40, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 13, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', outline: 'none' } })
+              )
+            )
+          ),
+          /* Live Scale Preview */
+          React.createElement('div', { style: { marginTop: 8 } },
+            React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-muted)', display: 'block', marginBottom: 10 } }, 'Generated Scale Preview'),
+            React.createElement('div', { style: { display: 'flex', height: 32, border: '1px solid var(--border-default)' } },
+              Object.values(generateScale(seedColor, 'brand')).map((hex, i) =>
+                React.createElement('div', { key: i, style: { flex: 1, background: hex } })
+              )
+            )
+          )
+        )
+      ),
+      /* Footer */
+      React.createElement('div', {
+        style: {
+          padding: '20px 32px', borderTop: '1px solid var(--border-subtle)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-subtle)'
+        }
+      },
+        step > 1 ? React.createElement(Button, { variant: 'outline', onClick: () => setStep(s => s - 1) }, 'Back') : React.createElement('div', null),
+        step < 3 ? React.createElement(Button, { variant: 'primary', onClick: () => setStep(s => s + 1) }, 'Continue →') : React.createElement(Button, { variant: 'brand', onClick: finishSetup }, 'Finish & Apply Tokens')
+      )
+    )
+  );
+}
+
 /* ------------------------------ sections ------------------------------ */
 function ColorTable({ rows, push, theme }) {
   const ref = useRef(null);
@@ -369,6 +563,21 @@ function LiveTokenCustomizer({ push }) {
   const [neutral900, setNeutral900] = useState('#171717');
   const [surfaceCanvas, setSurfaceCanvas] = useState('#ffffff');
   const [activePreset, setActivePreset] = useState('emerald');
+
+  useEffect(() => {
+    const handleUpdate = (e) => {
+      if (e.detail?.brand) setBrand500(e.detail.brand);
+      if (e.detail?.accent) setAccent500(e.detail.accent);
+      setActivePreset('custom');
+    };
+    const savedBrand = localStorage.getItem('ds-active-brand');
+    const savedAccent = localStorage.getItem('ds-active-accent');
+    if (savedBrand) setBrand500(savedBrand);
+    if (savedAccent) setAccent500(savedAccent);
+
+    window.addEventListener('ds-tokens-updated', handleUpdate);
+    return () => window.removeEventListener('ds-tokens-updated', handleUpdate);
+  }, []);
 
   const presets = [
     { id: 'emerald', name: 'Emerald (Default)', brand: '#10b981', accent: '#22c55e', dark: '#171717', canvas: '#ffffff' },
@@ -522,30 +731,116 @@ function ColorSection({ push, theme }) {
     React.createElement(AliasTable, { push }));
 }
 
+function loadGoogleFont(fontName) {
+  if (!fontName) return;
+  const cleanName = fontName.replace(/["']/g, '').trim();
+  const fontId = 'gf-' + cleanName.toLowerCase().replace(/\s+/g, '-');
+  if (!document.getElementById(fontId)) {
+    const link = document.createElement('link');
+    link.id = fontId;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(cleanName)}:wght@400;500;600;700;900&display=swap`;
+    document.head.appendChild(link);
+  }
+}
+
 function TypeTester({ push }) {
   const [text, setText] = useState('Amplify authentic voices at scale.');
   const [size, setSize] = useState(48);
   const [weight, setWeight] = useState(600);
+  const [displayFont, setDisplayFont] = useState(() => localStorage.getItem('ds-font-display') || 'Space Grotesk');
+  const [sansFont, setSansFont] = useState(() => localStorage.getItem('ds-font-sans') || 'Satoshi');
+  const [monoFont, setMonoFont] = useState(() => localStorage.getItem('ds-font-mono') || 'JetBrains Mono');
+  const [customFontInput, setCustomFontInput] = useState('');
+
+  const displayPresets = ['Space Grotesk', 'Outfit', 'Syne', 'Playfair Display', 'Cinzel', 'Plus Jakarta Sans'];
+  const bodyPresets = ['Satoshi', 'Inter', 'Plus Jakarta Sans', 'Roboto', 'DM Sans', 'Outfit'];
+  const monoPresets = ['JetBrains Mono', 'Fira Code', 'Space Mono', 'IBM Plex Mono'];
+
+  const applyFont = (role, fontName) => {
+    loadGoogleFont(fontName);
+    if (role === 'display') {
+      setDisplayFont(fontName);
+      localStorage.setItem('ds-font-display', fontName);
+      document.documentElement.style.setProperty('--font-display', `"${fontName}", sans-serif`);
+    } else if (role === 'sans') {
+      setSansFont(fontName);
+      localStorage.setItem('ds-font-sans', fontName);
+      document.documentElement.style.setProperty('--font-sans', `"${fontName}", sans-serif`);
+    } else if (role === 'mono') {
+      setMonoFont(fontName);
+      localStorage.setItem('ds-font-mono', fontName);
+      document.documentElement.style.setProperty('--font-mono', `"${fontName}", monospace`);
+    }
+    if (push) push({ title: 'Font Token Updated', message: `Applied ${fontName} to --font-${role}`, tone: 'brand' });
+  };
+
+  const applyCustomFont = (role) => {
+    if (!customFontInput.trim()) return;
+    applyFont(role, customFontInput.trim());
+    setCustomFontInput('');
+  };
+
+  const resetFonts = () => {
+    ['display', 'sans', 'mono'].forEach(r => localStorage.removeItem(`ds-font-${r}`));
+    document.documentElement.style.removeProperty('--font-display');
+    document.documentElement.style.removeProperty('--font-sans');
+    document.documentElement.style.removeProperty('--font-mono');
+    setDisplayFont('Space Grotesk');
+    setSansFont('Satoshi');
+    setMonoFont('JetBrains Mono');
+    if (push) push({ title: 'Fonts Reset', message: 'Restored original font tokens', tone: 'brand' });
+  };
+
   const fams = [
-    ['Space Grotesk', 'var(--font-display)', 'Display · headlines · large editorial titles', '-0.03em'],
-    ['Satoshi', 'var(--font-sans)', 'Interface · body · navigation · forms', '0'],
-    ['JetBrains Mono', 'var(--font-mono)', 'Labels · metadata · numbers · IDs', '0'],
+    [displayFont, 'var(--font-display)', 'Display · headlines · large editorial titles', '-0.03em', 'display', displayPresets],
+    [sansFont, 'var(--font-sans)', 'Interface · body · navigation · forms', '0', 'sans', bodyPresets],
+    [monoFont, 'var(--font-mono)', 'Labels · metadata · numbers · IDs', '0', 'mono', monoPresets],
   ];
+
   return React.createElement(Panel, { style: { marginBottom: 24, background: 'var(--surface-default)' } },
-    React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-      React.createElement(Sub, { }, 'Type tester - see how it feels'),
-      React.createElement('button', { onClick: () => copy(text, push), style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' } }, React.createElement(Icon, { name: 'copy', size: 13 }), 'Copy text')),
+    React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
+      React.createElement(Sub, { style: { margin: 0 } }, 'Interactive Font Playground & Swapper'),
+      React.createElement('div', { style: { display: 'flex', gap: 8 } },
+        React.createElement(Button, { variant: 'outline', size: 'sm', onClick: resetFonts }, 'Reset Fonts'),
+        React.createElement('button', { onClick: () => copy(text, push), style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' } }, React.createElement(Icon, { name: 'copy', size: 13 }), 'Copy text')
+      )
+    ),
+    React.createElement('p', { style: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: 1.5 } },
+      'Swap display, body, or mono typefaces dynamically. Select a curated preset or type any Google Font name below to test it across the entire platform.'
+    ),
+    /* Custom Google Font Input Bar */
+    React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 24, padding: 14, background: 'var(--surface-subtle)', border: '1px solid var(--border-default)' } },
+      React.createElement('div', { style: { flex: 1 } },
+        React.createElement(Input, { size: 'sm', placeholder: 'Type any Google Font name (e.g. Poppins, Outfit, Syne)…', value: customFontInput, onChange: e => setCustomFontInput(e.target.value) })
+      ),
+      React.createElement(Button, { variant: 'brand', size: 'sm', onClick: () => applyCustomFont('display') }, 'Set Display'),
+      React.createElement(Button, { variant: 'outline', size: 'sm', onClick: () => applyCustomFont('sans') }, 'Set Body'),
+      React.createElement(Button, { variant: 'outline', size: 'sm', onClick: () => applyCustomFont('mono') }, 'Set Mono')
+    ),
     React.createElement('div', { style: { display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap', margin: '16px 0 20px' } },
       React.createElement('div', { style: { flex: '1 1 320px' } }, React.createElement(Input, { label: 'Your text', value: text, onChange: (e) => setText(e.target.value), placeholder: 'Type anything…' })),
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 190 } },
         React.createElement('label', { style: { fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' } }, 'Size · ' + size + 'px'),
         React.createElement('input', { type: 'range', min: 14, max: 120, value: size, onChange: (e) => setSize(+e.target.value), style: { accentColor: 'var(--brand-500)', height: 44 } })),
       React.createElement('div', { style: { minWidth: 150 } }, React.createElement(Select, { label: 'Weight', value: String(weight), onChange: (e) => setWeight(+e.target.value), options: [{ value: '400', label: 'Regular 400' }, { value: '500', label: 'Medium 500' }, { value: '600', label: 'Semibold 600' }, { value: '700', label: 'Bold 700' }] }))),
-    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-      fams.map(([name, fam, role, tr]) => React.createElement('div', { key: name, style: { padding: '18px 0', borderTop: '1px solid var(--border-subtle)' } },
-        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 } },
-          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--text-primary)' } }, name),
-          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, role)),
+    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 20 } },
+      fams.map(([name, fam, roleDesc, tr, roleKey, presets]) => React.createElement('div', { key: roleKey, style: { padding: '18px 0', borderTop: '1px solid var(--border-subtle)' } },
+        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 } },
+          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--brand-600)' } }, `${roleKey.toUpperCase()} TOKEN · ${name}`),
+          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, roleDesc)),
+        React.createElement('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+          presets.map(p => React.createElement('button', {
+            key: p, onClick: () => applyFont(roleKey, p),
+            style: {
+              padding: '4px 10px', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.04em',
+              border: name === p ? '1px solid var(--brand-500)' : '1px solid var(--border-default)',
+              background: name === p ? 'var(--state-selected)' : 'var(--surface-default)',
+              color: name === p ? 'var(--state-selected-fg)' : 'var(--text-secondary)',
+              cursor: 'pointer'
+            }
+          }, p))
+        ),
         React.createElement('div', { style: { fontFamily: fam, fontSize: size, fontWeight: weight, letterSpacing: tr, lineHeight: 1.1, color: 'var(--text-primary)', wordBreak: 'break-word' } }, text || 'Type something above…')))));
 }
 
@@ -565,7 +860,7 @@ function FileDownload({ href, label, hint, target, rel, download = true }) {
 
 function TypeSection({ push }) {
   const fonts = [['Space Grotesk','var(--font-display)','Display · headlines · numerals','assets/fonts/SpaceGrotesk.zip'],['Satoshi','var(--font-sans)','Interface · body · forms','assets/fonts/Satoshi.zip'],['JetBrains Mono','var(--font-mono)','Labels · metadata · numbers','assets/fonts/JetBrainsMono.zip']];
-  return React.createElement(Section, { id: 'type', kicker: 'Foundations', title: 'Typography', intro: 'Three families, three strict roles. Space Grotesk leads, Satoshi carries the reading, JetBrains Mono handles metadata. Try the tester below.' },
+  return React.createElement(Section, { id: 'type', kicker: 'Foundations', title: 'Typography', intro: 'Three core font roles with live Google Fonts swapper. Select curated presets or test custom typefaces in real-time across all components.' },
     React.createElement(TypeTester, { push }),
     fonts.map(([name, fam, role, zip]) => React.createElement(Panel, { key: name, style: { marginBottom: 16 } },
       React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 } },
@@ -1553,6 +1848,99 @@ function tsExport() {
   a.href = url; a.download = 'design-system-studio-tokens.ts'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 }
 
+/* ---- Export: Web Components (.js) ---- */
+function webComponentsExport() {
+  const code = `/**
+ * Design System Studio — Native Web Components Bundle
+ * Framework-agnostic CustomElements (HTML5 / Vue / Angular / Svelte / Vanilla)
+ * Generated: ${new Date().toISOString().slice(0,10)}
+ */
+
+(function() {
+  if (typeof window === 'undefined' || !window.customElements) return;
+
+  // Custom Element: <ds-button>
+  class DSButton extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+    }
+    connectedCallback() {
+      const variant = this.getAttribute('variant') || 'primary';
+      const size = this.getAttribute('size') || 'md';
+      const radius = this.getAttribute('radius') || 'sharp';
+      
+      const heights = { sm: '34px', md: '44px', lg: '52px' };
+      const paddings = { sm: '0 14px', md: '0 16px', lg: '0 22px' };
+      const fontSizes = { sm: '12px', md: '14px', lg: '15px' };
+
+      this.shadowRoot.innerHTML = \`
+        <style>
+          :host { display: inline-block; }
+          button {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            height: \${heights[size] || '44px'}; padding: \${paddings[size] || '0 16px'};
+            font-family: var(--font-sans, system-ui, sans-serif); font-size: \${fontSizes[size] || '14px'};
+            font-weight: 700; border-radius: var(--radius-\${radius}, 0px); cursor: pointer;
+            border: \${variant === 'outline' ? '1px solid var(--border-strong, #3a3a3a)' : 'none'};
+            background: \${variant === 'brand' ? 'var(--action-brand, #10b981)' : variant === 'outline' ? 'transparent' : 'var(--action-primary, #171717)'};
+            color: \${variant === 'brand' ? 'var(--text-on-brand, #fff)' : variant === 'outline' ? 'var(--text-primary, #fff)' : 'var(--text-inverse, #fff)'};
+            transition: all 150ms ease;
+          }
+          button:hover { opacity: 0.9; transform: translateY(-1px); }
+        </style>
+        <button><slot></slot></button>
+      \`;
+    }
+  }
+
+  // Custom Element: <ds-badge>
+  class DSBadge extends HTMLElement {
+    constructor() { super(); this.attachShadow({ mode: 'open' }); }
+    connectedCallback() {
+      const tone = this.getAttribute('tone') || 'brand';
+      this.shadowRoot.innerHTML = \`
+        <style>
+          :host { display: inline-block; }
+          span {
+            display: inline-flex; align-items: center; padding: 3px 9px;
+            font-family: var(--font-mono, monospace); font-size: 11px; font-weight: 600;
+            border-radius: 9999px; background: var(--\${tone}-50, #ecfdf5); color: var(--\${tone}-700, #047857);
+          }
+        </style>
+        <span><slot></slot></span>
+      \`;
+    }
+  }
+
+  // Custom Element: <ds-card>
+  class DSCard extends HTMLElement {
+    constructor() { super(); this.attachShadow({ mode: 'open' }); }
+    connectedCallback() {
+      this.shadowRoot.innerHTML = \`
+        <style>
+          :host { display: block; }
+          div {
+            padding: 24px; border: 1px solid var(--border-default, #e5e5e5);
+            background: var(--surface-default, #ffffff); border-radius: var(--radius-sharp, 0px);
+          }
+        </style>
+        <div><slot></slot></div>
+      \`;
+    }
+  }
+
+  // Register Custom Elements
+  if (!customElements.get('ds-button')) customElements.define('ds-button', DSButton);
+  if (!customElements.get('ds-badge')) customElements.define('ds-badge', DSBadge);
+  if (!customElements.get('ds-card')) customElements.define('ds-card', DSCard);
+})();`;
+
+  const blob = new Blob([code], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = 'design-system-components.js'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
 function figmaExport() {
   /* Figma-native Variables import format: $type/$value objects with sRGB
      components + hex, nested groups, com.figma.* extensions. Matches the
@@ -1693,6 +2081,13 @@ function App() {
 
   const [search, setSearch] = useState('');
   const [exportOpen, setExportOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem('ds-wizard-completed')) {
+      setWizardOpen(true);
+    }
+  }, []);
   const filteredNav = search.trim() === ''
     ? NAV
     : NAV.filter(n => n[1] === null ? NAV.filter(m => m[1] && m[0].toLowerCase().includes(search.toLowerCase())).length > 0 : n[0].toLowerCase().includes(search.toLowerCase()));
@@ -1750,15 +2145,26 @@ function App() {
         React.createElement('div', { style: { position: 'relative' } },
           React.createElement(Button, { variant: 'primary', size: 'sm', fullWidth: true, iconLeft: 'download', iconRight: 'chevron-down', onClick: () => setExportOpen(o => !o) }, 'Export Tokens'),
           exportOpen && React.createElement('div', { style: { position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 4, background: 'var(--surface-default)', border: '1px solid var(--border-strong)', boxShadow: 'var(--shadow-lg)', zIndex: 100, display: 'flex', flexDirection: 'column' } },
-            [['Figma Variables (.json)', figmaExport, 'figma'], ['CSS Custom Properties', cssExport, 'css'], ['W3C DTCG JSON', dtcgExport, 'dtcg'], ['Tailwind Config', tailwindExport, 'tw'], ['TypeScript Constants', tsExport, 'ts']].map(([label, fn, key]) =>
+            [['Figma Variables (.json)', figmaExport, 'figma'], ['Web Components (.js)', webComponentsExport, 'wc'], ['CSS Custom Properties', cssExport, 'css'], ['W3C DTCG JSON', dtcgExport, 'dtcg'], ['Tailwind Config', tailwindExport, 'tw'], ['TypeScript Constants', tsExport, 'ts']].map(([label, fn, key]) =>
               React.createElement('button', { key, onClick: () => { fn(); setExportOpen(false); }, style: { padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.08em', textAlign: 'left', background: 'var(--surface-default)', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', color: 'var(--text-primary)' },
                 onMouseEnter: e => { e.target.style.background = 'var(--brand-500)'; e.target.style.color = 'var(--text-on-brand)'; },
                 onMouseLeave: e => { e.target.style.background = 'var(--surface-default)'; e.target.style.color = 'var(--text-primary)'; }
               }, '↓  ' + label)))),
         React.createElement('a', { href: 'Brand Guidelines.html', style: { textDecoration: 'none' } }, React.createElement(Button, { variant: 'outline', size: 'sm', fullWidth: true, style: { pointerEvents: 'none' } }, 'Brand Guidelines')))),
     /* main */
-    React.createElement('main', { ref: mainRef, className: 'main-content', style: { flex: 1, overflowY: 'auto', height: '100%' } },
-      React.createElement('div', { style: { maxWidth: 960, margin: '0 auto', padding: '72px 56px 120px' } },
+    React.createElement('main', { ref: mainRef, className: 'main-content', style: { flex: 1, overflowY: 'auto', height: '100%', position: 'relative' } },
+      /* Top Right Navigation CTA Bar */
+      React.createElement('div', {
+        style: {
+          position: 'sticky', top: 0, zIndex: 500, display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+          padding: '16px 36px', background: 'var(--surface-canvas)', borderBottom: '1px solid var(--border-subtle)'
+        }
+      },
+        React.createElement(Button, {
+          variant: 'brand', size: 'sm', iconLeft: 'sliders', onClick: () => setWizardOpen(true)
+        }, 'Setup Wizard')
+      ),
+      React.createElement('div', { style: { maxWidth: 960, margin: '0 auto', padding: '48px 56px 120px' } },
         /* overview */
         React.createElement('section', { id: 'overview', style: { scrollMarginTop: 24, marginBottom: 88 } },
           React.createElement(Eyebrow, { size: 12, style: { marginBottom: 20 } }, 'Design System Studio · Token Engine'),
@@ -1799,11 +2205,27 @@ function App() {
             React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Editable starting point - fonts embedded, real text boxes, ready for PowerPoint / Google Slides / Canva'))),
         React.createElement(StateMatrixSection, null),
         React.createElement(WCAGSection, null),
-        React.createElement(ChangelogSection, null),
-        React.createElement('footer', { style: { borderTop: '1px solid var(--border-default)', paddingTop: 28, marginTop: 24, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-faint)', display: 'flex', justifyContent: 'space-between' } },
-          React.createElement('span', null, 'DESIGN SYSTEM STUDIO · v1.1.0'),
-          React.createElement('span', null, 'MIT LICENSE · OPEN SOURCE & COMMERCIAL READY'))),
-      toastNode));
+        React.createElement(ChangelogSection, null)
+      )
+    ),
+    /* FAB Scroll to Top Button */
+    React.createElement('button', {
+      onClick: () => { const c = mainRef.current; if (c) c.scrollTo({ top: 0, behavior: 'smooth' }); },
+      title: 'Scroll to Top',
+      style: {
+        position: 'fixed', bottom: 28, right: 28, zIndex: 900,
+        width: 44, height: 44, borderRadius: '50%',
+        background: 'var(--action-primary)', color: 'var(--text-inverse)',
+        border: '1px solid var(--border-strong)', boxShadow: 'var(--shadow-lg)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        transition: 'transform 0.15s ease, background 0.15s ease'
+      },
+      onMouseEnter: e => e.currentTarget.style.transform = 'scale(1.08)',
+      onMouseLeave: e => e.currentTarget.style.transform = 'scale(1)'
+    }, React.createElement(Icon, { name: 'arrow-up', size: 18, style: { color: '#ffffff' } })),
+    React.createElement(OnboardingWizard, { open: wizardOpen, onClose: () => setWizardOpen(false), push }),
+    toastNode
+  );
 }
 const __rootEl = document.getElementById('root');
 window.DesignSystemStudioDSRoot = window.DesignSystemStudioDSRoot || ReactDOM.createRoot(__rootEl);
