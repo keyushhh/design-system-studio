@@ -80,7 +80,14 @@ const TYPE_SCALE = [
 ];
 const famOf = (name) => name === 'Satoshi' ? 'var(--font-sans)' : name === 'JetBrains Mono' ? 'var(--font-mono)' : 'var(--font-display)';
 const SPACING = [['1','4px','0.25rem'],['2','8px','0.5rem'],['3','12px','0.75rem'],['4','16px','1rem'],['5','20px','1.25rem'],['6','24px','1.5rem'],['8','32px','2rem'],['10','40px','2.5rem'],['12','48px','3rem'],['16','64px','4rem'],['20','80px','5rem'],['24','96px','6rem']];
-const RADII = [['sharp','0px','All containers - cards, inputs, buttons, dialogs, panels'],['full','9999px','Only round elements - avatars, status dots, the switch']];
+const RADII = [
+  ['sharp', '0px', 'Default editorial containers — cards, inputs, buttons, dialogs, panels'],
+  ['sm', '2px', 'Subtle rounding for micro-elements, tooltips, and dense tags'],
+  ['md', '4px', 'Standard component radius option for rounded aesthetic themes'],
+  ['lg', '8px', 'Soft container corners for elevated cards and dropdown menus'],
+  ['xl', '16px', 'Prominent rounded surfaces, hero banners, and modal dialogs'],
+  ['full', '9999px', 'Pill & circular primitives — avatars, status dots, toggle switches']
+];
 const SHADOWS = [['xs','0 1px 2px rgb(0 0 0 / .05)'],['sm','0 1px 3px rgb(0 0 0 / .1)'],['md','0 4px 6px rgb(0 0 0 / .1)'],['soft','0 1px 2px …, 0 12px 32px -12px …'],['lift','0 2px 4px …, 0 24px 48px -16px …']];
 const MOTION = [['fast','150ms','micro - hover, color'],['normal','200ms','controls, toggles'],['slow','300ms','panels, overlays'],['slower','500ms','page / route transitions']];
 const EASING = [
@@ -311,8 +318,195 @@ function AliasTable({ push }) {
       React.createElement('span', { style: { color: 'var(--text-faint)', display: 'inline-flex' } }, React.createElement(Icon, { name: 'copy', size: 14 })))));
 }
 
+function hexToHsl(hex) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const num = parseInt(c, 16);
+  let r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+
+function generateScale(hexColor, type) {
+  const [h, s, l] = hexToHsl(hexColor);
+  const lightnessMap = type === 'brand' ? {
+    50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
+  } : {
+    50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
+  };
+
+  const scale = {};
+  Object.keys(lightnessMap).forEach(step => {
+    scale[`--${type}-${step}`] = hslToHex(h, s, lightnessMap[step]);
+  });
+  return scale;
+}
+
+function LiveTokenCustomizer({ push }) {
+  const [brand500, setBrand500] = useState('#10b981');
+  const [accent500, setAccent500] = useState('#22c55e');
+  const [neutral900, setNeutral900] = useState('#171717');
+  const [surfaceCanvas, setSurfaceCanvas] = useState('#ffffff');
+  const [activePreset, setActivePreset] = useState('emerald');
+
+  const presets = [
+    { id: 'emerald', name: 'Emerald (Default)', brand: '#10b981', accent: '#22c55e', dark: '#171717', canvas: '#ffffff' },
+    { id: 'indigo', name: 'Electric Indigo', brand: '#6366f1', accent: '#818cf8', dark: '#0f172a', canvas: '#f8fafc' },
+    { id: 'amber', name: 'Cyber Amber', brand: '#f59e0b', accent: '#fbbf24', dark: '#18181b', canvas: '#fafafa' },
+    { id: 'rose', name: 'Neon Rose', brand: '#f43f5e', accent: '#fb7185', dark: '#111827', canvas: '#f9fafb' },
+  ];
+
+  const applyBrandColor = (hex) => {
+    setBrand500(hex);
+    const scale = generateScale(hex, 'brand');
+    Object.keys(scale).forEach(prop => {
+      document.documentElement.style.setProperty(prop, scale[prop]);
+    });
+  };
+
+  const applyAccentColor = (hex) => {
+    setAccent500(hex);
+    const scale = generateScale(hex, 'accent');
+    Object.keys(scale).forEach(prop => {
+      document.documentElement.style.setProperty(prop, scale[prop]);
+    });
+  };
+
+  const updateToken = (type, value) => {
+    setActivePreset('custom');
+    if (type === 'brand') applyBrandColor(value);
+    else if (type === 'accent') applyAccentColor(value);
+    else if (type === 'neutral') {
+      setNeutral900(value);
+      document.documentElement.style.setProperty('--neutral-900', value);
+      document.documentElement.style.setProperty('--action-primary', value);
+    } else if (type === 'canvas') {
+      setSurfaceCanvas(value);
+      document.documentElement.style.setProperty('--surface-canvas', value);
+    }
+  };
+
+  const applyPreset = (preset) => {
+    setActivePreset(preset.id);
+    applyBrandColor(preset.brand);
+    applyAccentColor(preset.accent);
+    setNeutral900(preset.dark);
+    document.documentElement.style.setProperty('--neutral-900', preset.dark);
+    document.documentElement.style.setProperty('--action-primary', preset.dark);
+    document.documentElement.style.removeProperty('--surface-canvas');
+    if (push) push({ title: 'Preset Applied', message: preset.name + ' full scale active', tone: 'brand' });
+  };
+
+  const resetTokens = () => {
+    ['50','100','200','300','400','500','600','700','800','900','950'].forEach(s => {
+      document.documentElement.style.removeProperty(`--brand-${s}`);
+      document.documentElement.style.removeProperty(`--accent-${s}`);
+    });
+    document.documentElement.style.removeProperty('--neutral-900');
+    document.documentElement.style.removeProperty('--action-primary');
+    document.documentElement.style.removeProperty('--surface-canvas');
+    setBrand500('#10b981');
+    setAccent500('#22c55e');
+    setNeutral900('#171717');
+    setSurfaceCanvas('#ffffff');
+    setActivePreset('emerald');
+    if (push) push({ title: 'Tokens Reset', message: 'Restored original system values', tone: 'brand' });
+  };
+
+  return React.createElement(Panel, { style: { marginBottom: 32, border: '2px solid var(--brand-500)' } },
+    React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
+      React.createElement('h3', { style: { fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, margin: 0, color: 'var(--text-primary)' } }, 'Live Token Customizer'),
+      React.createElement(Button, { variant: 'outline', size: 'sm', onClick: resetTokens }, 'Reset Defaults')
+    ),
+    React.createElement('p', { style: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: 1.5 } },
+      'Customize core system tokens in real-time. Changing primary or accent colors automatically regenerates full 10-step color scales across the entire platform.'
+    ),
+    React.createElement('div', { style: { display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' } },
+      presets.map(p => React.createElement('button', {
+        key: p.id,
+        onClick: () => applyPreset(p),
+        style: {
+          padding: '6px 12px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 11,
+          border: activePreset === p.id ? '2px solid var(--brand-500)' : '1px solid var(--border-default)',
+          background: activePreset === p.id ? 'var(--state-selected)' : 'var(--surface-default)',
+          color: activePreset === p.id ? 'var(--state-selected-fg)' : 'var(--text-primary)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6
+        }
+      },
+        React.createElement('span', { style: { width: 10, height: 10, borderRadius: '50%', background: p.brand } }),
+        p.name
+      ))
+    ),
+    React.createElement('div', { className: 'responsive-grid-2', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 } },
+      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--brand-500 (Primary Brand Scale)'),
+        React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+          React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: brand500, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
+            React.createElement('input', { type: 'color', value: brand500, onChange: e => updateToken('brand', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+          ),
+          React.createElement('input', { type: 'text', value: brand500, onChange: e => updateToken('brand', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+        )
+      ),
+      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--accent-500 (Secondary Accent Scale)'),
+        React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+          React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: accent500, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
+            React.createElement('input', { type: 'color', value: accent500, onChange: e => updateToken('accent', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+          ),
+          React.createElement('input', { type: 'text', value: accent500, onChange: e => updateToken('accent', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+        )
+      ),
+      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--neutral-900 (Action Primary)'),
+        React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+          React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: neutral900, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
+            React.createElement('input', { type: 'color', value: neutral900, onChange: e => updateToken('neutral', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+          ),
+          React.createElement('input', { type: 'text', value: neutral900, onChange: e => updateToken('neutral', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+        )
+      ),
+      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--surface-canvas (Page Background)'),
+        React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+          React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: surfaceCanvas, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
+            React.createElement('input', { type: 'color', value: surfaceCanvas, onChange: e => updateToken('canvas', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+          ),
+          React.createElement('input', { type: 'text', value: surfaceCanvas, onChange: e => updateToken('canvas', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+        )
+      )
+    )
+  );
+}
+
 function ColorSection({ push, theme }) {
   return React.createElement(Section, { id: 'color', kicker: 'Foundations', title: 'Color', intro: 'Emerald is the single brand accent; everything else is a near-monochrome neutral scale. Swatches and values reflect the active theme - the light tint steps resolve to dark washes in dark mode. Click any row to copy its token.' },
+    React.createElement(LiveTokenCustomizer, { push }),
     React.createElement(Sub, null, 'Brand · Emerald (primary)'),
     React.createElement(ColorTable, { rows: scaleRows('brand', [50,100,200,300,400,500,600,700,800,900,950]), push, theme }),
     React.createElement(Sub, null, 'Accent · Leaf (secondary)'),
@@ -337,7 +531,7 @@ function TypeTester({ push }) {
     ['Satoshi', 'var(--font-sans)', 'Interface · body · navigation · forms', '0'],
     ['JetBrains Mono', 'var(--font-mono)', 'Labels · metadata · numbers · IDs', '0'],
   ];
-  return React.createElement(Panel, { style: { marginBottom: 24, background: 'var(--neutral-50)' } },
+  return React.createElement(Panel, { style: { marginBottom: 24, background: 'var(--surface-default)' } },
     React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
       React.createElement(Sub, { }, 'Type tester - see how it feels'),
       React.createElement('button', { onClick: () => copy(text, push), style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' } }, React.createElement(Icon, { name: 'copy', size: 13 }), 'Copy text')),
@@ -403,7 +597,7 @@ function SpacingSection() {
       return React.createElement('button', {
         key: v,
         onClick: function() { setScale(v); },
-        style: { fontFamily: 'var(--font-mono)', fontSize: 11, padding: '4px 10px', border: '1px solid var(--border-default)', background: scale === v ? 'var(--neutral-900)' : 'transparent', color: scale === v ? '#fff' : 'var(--text-secondary)', cursor: 'pointer' }
+        style: { fontFamily: 'var(--font-mono)', fontSize: 11, padding: '4px 10px', border: '1px solid var(--border-default)', background: scale === v ? 'var(--action-primary)' : 'transparent', color: scale === v ? 'var(--text-inverse)' : 'var(--text-secondary)', cursor: 'pointer' }
       }, v + 'x');
     })
   );
@@ -453,18 +647,119 @@ function SpacingSection() {
   );
 }
 function RadiusSection() {
-  return React.createElement(Section, { id: 'radius', kicker: 'Foundations', title: 'Corner Radius', intro: 'The system is sharp by design; every container is 0 for an editorial, print-like feel. The only exception is genuinely round elements (avatars, dots, the switch), which use full.' },
-    React.createElement('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap' } },
-      RADII.map((r) => React.createElement('div', { key: r[0], style: { textAlign: 'center' } },
-        React.createElement('div', { style: { width: 92, height: 68, background: 'var(--neutral-100)', border: '1px solid var(--border-strong)', borderRadius: r[1] === '9999px' ? 34 : r[1] } }),
-        React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-primary)', marginTop: 10 } }, r[0] + ' · ' + r[1]),
-        React.createElement('div', { style: { fontSize: 11, color: 'var(--text-muted)', marginTop: 2 } }, r[2])))));
+  const [customRadius, setCustomRadius] = useState(8);
+  const [selectedRadius, setSelectedRadius] = useState(null);
+
+  return React.createElement(Section, { id: 'radius', kicker: 'Foundations', title: 'Corner Radius', intro: 'Corner radius tokens define structural curvature across the design system. Adjust the interactive controls below to preview dynamic rounding across UI components.' },
+    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16, marginBottom: 28 } },
+      RADII.map(function(r) {
+        const isSelected = selectedRadius === r[0];
+        return React.createElement('div', {
+          key: r[0],
+          onClick: function() { setSelectedRadius(r[0]); },
+          style: {
+            padding: 16,
+            background: isSelected ? 'var(--state-selected)' : 'var(--surface-default)',
+            border: isSelected ? '2px solid var(--brand-500)' : '1px solid var(--border-default)',
+            cursor: 'pointer',
+            textAlign: 'center',
+            transition: 'all 150ms'
+          }
+        },
+          React.createElement('div', {
+            style: {
+              width: '100%',
+              height: 60,
+              background: 'var(--neutral-100)',
+              border: '1px solid var(--border-strong)',
+              borderRadius: r[1] === '9999px' ? '30px' : r[1],
+              margin: '0 auto 12px'
+            }
+          }),
+          React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' } }, r[0]),
+          React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--brand-600)', marginTop: 2 } }, r[1]),
+          React.createElement('div', { style: { fontSize: 10, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.3 } }, r[2])
+        );
+      })
+    ),
+    React.createElement(Sub, null, 'Interactive Radius Playground'),
+    React.createElement(Panel, null,
+      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 20 } },
+        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 16 } },
+          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' } }, 'Radius Value:'),
+          React.createElement('input', {
+            type: 'range',
+            min: 0,
+            max: 32,
+            value: customRadius,
+            onChange: function(e) { setCustomRadius(Number(e.target.value)); },
+            style: { flex: 1 }
+          }),
+          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700, minWidth: 48 } }, customRadius + 'px')
+        ),
+        React.createElement('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-start' } },
+          React.createElement('button', {
+            style: {
+              padding: '10px 20px',
+              background: 'var(--action-primary)',
+              color: 'var(--text-inverse)',
+              border: 'none',
+              borderRadius: customRadius + 'px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 12,
+              cursor: 'pointer'
+            }
+          }, 'Button Primitive'),
+          React.createElement('input', {
+            placeholder: 'Input primitive...',
+            readOnly: true,
+            style: {
+              padding: '10px 14px',
+              border: '1px solid var(--border-default)',
+              background: 'var(--surface-canvas)',
+              color: 'var(--text-primary)',
+              borderRadius: customRadius + 'px',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 13,
+              outline: 'none'
+            }
+          }),
+          React.createElement('div', {
+            style: {
+              padding: '8px 14px',
+              background: 'var(--brand-100)',
+              color: 'var(--brand-700)',
+              border: '1px solid var(--brand-300)',
+              borderRadius: customRadius + 'px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11
+            }
+          }, 'Badge Primitive'),
+          React.createElement('div', {
+            style: {
+              width: 140,
+              height: 64,
+              background: 'var(--surface-default)',
+              border: '1px solid var(--border-strong)',
+              borderRadius: customRadius + 'px',
+              display: 'flex',
+              alignItems: 'center',
+              justify: 'center',
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--text-muted)'
+            }
+          }, 'Card Surface')
+        )
+      )
+    )
+  );
 }
 function ElevationSection() {
   return React.createElement(Section, { id: 'elevation', kicker: 'Foundations', title: 'Elevation', intro: 'The interface leans on spacing and contrast. Shadows stay soft and rare - two editorial lifts for raised surfaces.' },
-    React.createElement('div', { style: { display: 'flex', gap: 28, flexWrap: 'wrap', background: 'var(--neutral-50)', padding: 32, border: '1px solid var(--border-default)' } },
+    React.createElement('div', { style: { display: 'flex', gap: 28, flexWrap: 'wrap', background: 'var(--surface-subtle)', padding: 32, border: '1px solid var(--border-default)' } },
       SHADOWS.map((s) => React.createElement('div', { key: s[0], style: { textAlign: 'center' } },
-        React.createElement('div', { style: { width: 130, height: 78, background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 0, boxShadow: `var(--shadow-${s[0]})` } }),
+        React.createElement('div', { style: { width: 130, height: 78, background: 'var(--surface-default)', border: '1px solid var(--border-strong)', borderRadius: 0, boxShadow: `var(--shadow-${s[0]})` } }),
         React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-primary)', marginTop: 12 } }, 'shadow-' + s[0])))));
 }
 /* SVG bezier curve visualizer for easing section */
@@ -669,7 +964,7 @@ function WCAGSection() {
   };
   return React.createElement(Section, { id: 'wcag', kicker: 'System', title: 'WCAG Contrast Checker', intro: 'Contrast ratios for every text/surface token pair in the active theme. AA requires ≥4.5:1 (normal text) or ≥3:1 (large text). AAA requires ≥7:1.' },
     React.createElement('div', { style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)' } },
-      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 200px 120px 120px 80px', gap: 12, padding: '10px 16px', background: 'var(--neutral-50)', borderBottom: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 600 } },
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 200px 120px 120px 80px', gap: 12, padding: '10px 16px', background: 'var(--surface-subtle)', borderBottom: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 600 } },
         React.createElement('span', null, 'Pair description'),
         React.createElement('span', null, 'Tokens'),
         React.createElement('span', { style: { textAlign: 'center' } }, 'Ratio'),
@@ -686,9 +981,9 @@ function WCAGSection() {
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center' } }, ratio + ':1'),
           React.createElement('span', { style: { height: 32, background: p.bgHex, border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: p.fgHex } }, 'Aa'),
           React.createElement('span', { style: { textAlign: 'center' } },
-            React.createElement('span', { style: { display: 'inline-block', padding: '3px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: '#fff', background: g.color, letterSpacing: '0.06em' } }, g.label)));
+            React.createElement('span', { style: { display: 'inline-block', padding: '3px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--text-on-brand)', background: g.color, letterSpacing: '0.06em' } }, g.label)));
       })),
-    React.createElement('div', { style: { marginTop: 20, padding: 16, background: 'var(--neutral-50)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.8 } },
+    React.createElement('div', { style: { marginTop: 20, padding: 16, background: 'var(--surface-default)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.8 } },
       React.createElement('span', { style: { fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: 6 } }, 'WCAG 2.1 Reference'),
       'AA Normal text ≥ 4.5:1  ·  AA Large text (18pt+ or 14pt bold) ≥ 3:1  ·  AAA ≥ 7:1  ·  UI Components ≥ 3:1'
     ));
@@ -699,29 +994,29 @@ function ChangelogSection() {
   return React.createElement(Section, { id: 'changelog', kicker: 'System', title: 'Changelog', intro: 'A running history of every meaningful change to Design System Studio. Format follows Keep a Changelog.' },
     ...CHANGELOG.map((entry) =>
       React.createElement('div', { key: entry.version, style: { marginBottom: 32, border: '1px solid var(--border-default)', background: 'var(--surface-default)' } },
-        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--neutral-50)' } },
+        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface-subtle)' } },
           React.createElement('span', { style: { fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' } }, 'v' + entry.version),
           React.createElement(Badge, { tone: entry.tag === 'latest' ? 'success' : 'neutral', variant: entry.tag === 'latest' ? 'solid' : 'subtle' }, entry.tag),
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' } }, entry.date)
         ),
         React.createElement('div', { style: { padding: '16px 20px', display: 'flex', gap: 32, flexWrap: 'wrap' } },
           entry.added && React.createElement('div', { style: { flex: '1 1 300px' } },
-            React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#059669', marginBottom: 10 } }, '+ Added'),
+            React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-brand)', marginBottom: 10 } }, '+ Added'),
             React.createElement('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
               ...entry.added.map((item, j) =>
                 React.createElement('li', { key: j, style: { fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', gap: 8 } },
-                  React.createElement('span', { style: { color: '#059669', flexShrink: 0, fontWeight: 700 } }, '→'),
+                  React.createElement('span', { style: { color: 'var(--text-brand)', flexShrink: 0, fontWeight: 700 } }, '→'),
                   item
                 )
               )
             )
           ),
           entry.changed && React.createElement('div', { style: { flex: '1 1 300px' } },
-            React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#d97706', marginBottom: 10 } }, '~ Changed'),
+            React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--warning-500)', marginBottom: 10 } }, '~ Changed'),
             React.createElement('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
               ...entry.changed.map((item, j) =>
                 React.createElement('li', { key: j, style: { fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', gap: 8 } },
-                  React.createElement('span', { style: { color: '#d97706', flexShrink: 0, fontWeight: 700 } }, '→'),
+                  React.createElement('span', { style: { color: 'var(--warning-500)', flexShrink: 0, fontWeight: 700 } }, '→'),
                   item
                 )
               )
@@ -743,9 +1038,9 @@ function TokenMapSection() {
   );
   const ARROW = () => React.createElement('div', { style: { display: 'flex', alignItems: 'center', color: 'var(--brand-400)', fontSize: 18, fontWeight: 300, padding: '0 4px' } }, '\u2192');
   const layers = [
-    { label: 'Primitive', color: 'var(--neutral-100)', tokens: [['--brand-500','#10b981'],['--neutral-900','#171717'],['--neutral-0','#ffffff'],['--warning-500','#f59e0b'],['--error-500','#ef4444']] },
-    { label: 'Semantic Alias', color: 'var(--brand-50)', tokens: [['--text-primary','neutral-900'],['--surface-default','#ffffff'],['--action-primary','neutral-900'],['--focus-ring','brand-500'],['--state-selected','brand-50']] },
-    { label: 'Component', color: 'var(--neutral-50)', tokens: [['Button.primary','action-primary'],['Input.border','border-default'],['Badge.brand','brand-50/700'],['Card.surface','surface-default'],['Switch.on','brand-500']] },
+    { label: 'Primitive', color: 'var(--surface-default)', tokens: [['--brand-500','#10b981'],['--neutral-900','#171717'],['--neutral-0','#ffffff'],['--warning-500','#f59e0b'],['--error-500','#ef4444']] },
+    { label: 'Semantic Alias', color: 'var(--surface-subtle)', tokens: [['--text-primary','neutral-900'],['--surface-default','#ffffff'],['--action-primary','neutral-900'],['--focus-ring','brand-500'],['--state-selected','brand-50']] },
+    { label: 'Component', color: 'var(--surface-default)', tokens: [['Button.primary','action-primary'],['Input.border','border-default'],['Badge.brand','brand-50/700'],['Card.surface','surface-default'],['Switch.on','brand-500']] },
   ];
   return React.createElement(Section, { id: 'tokenmap', kicker: 'Foundations', title: 'Token Dependency Map', intro: 'Tokens flow in one direction: primitives define raw values \u2192 semantic aliases assign meaning \u2192 components consume meaning, never raw values.' },
     React.createElement('div', { style: { display: 'flex', gap: 0, alignItems: 'stretch', overflowX: 'auto', marginBottom: 24 } },
@@ -766,7 +1061,7 @@ function TokenMapSection() {
         )
       ))
     ),
-    React.createElement('div', { style: { padding: 16, background: 'var(--neutral-50)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.8 } },
+    React.createElement('div', { style: { padding: 16, background: 'var(--surface-default)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.8 } },
       React.createElement('strong', { style: { color: 'var(--text-primary)', display: 'block', marginBottom: 4 } }, 'Rule: Components must never reference primitives directly.'),
       'A Button uses --action-primary, which maps to --neutral-900. To retheme, update the semantic alias. The Button changes automatically.'
     )
@@ -816,7 +1111,7 @@ function AvatarSection({ push }) {
 /* ========== PROGRESS + SKELETON ========== */
 function ProgressSection() {
   const [progress, setProgress] = useState(65);
-  const Skeleton = ({ w = '100%', h = 16, style = {} }) => React.createElement('div', { style: { width: w, height: h, background: 'linear-gradient(90deg, var(--neutral-100) 25%, var(--neutral-200) 50%, var(--neutral-100) 75%)', backgroundSize: '200% 100%', animation: 'ds-shimmer 1.5s infinite', ...style } });
+  const Skeleton = ({ w = '100%', h = 16, style = {} }) => React.createElement('div', { style: { width: w, height: h, background: 'linear-gradient(90deg, var(--surface-subtle) 25%, var(--border-default) 50%, var(--surface-subtle) 75%)', backgroundSize: '200% 100%', animation: 'ds-shimmer 1.5s infinite', ...style } });
   return React.createElement(Section, { id: 'progress', kicker: 'New Components', title: 'Progress & Skeleton', intro: 'Linear progress bars and skeleton shimmer loaders for async states.' },
     React.createElement('style', null, '@keyframes ds-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }'),
     React.createElement(Sub, null, 'Progress bar \u2014 interactive'),
@@ -944,6 +1239,7 @@ function AccordionSection() {
 
 /* ========== TABLE ========== */
 function TableSection() {
+  const columns = ['Token', 'Value', 'Type', 'Scope', 'Usage'];
   const rows = [
     { token: '--brand-500', value: '#10b981', type: 'color', scope: 'Brand', usage: 'Focus ring, icons, active states' },
     { token: '--text-primary', value: '--neutral-900', type: 'alias', scope: 'Text', usage: 'Headings, body, all primary content' },
@@ -952,30 +1248,21 @@ function TableSection() {
     { token: '--font-display', value: 'Space Grotesk', type: 'fontFamily', scope: 'Typography', usage: 'Headings, display, slide covers' },
     { token: '--radius-sharp', value: '0px', type: 'dimension', scope: 'Radius', usage: 'All containers — the editorial default' },
   ];
-  const SCOPE_COLOR = { Brand: 'var(--brand-50)', Text: 'var(--neutral-100)', Surface: 'var(--info-50)', Spacing: 'var(--success-50)', Typography: 'var(--warning-50)', Radius: 'var(--error-50)' };
-  const SCOPE_FG = { Brand: 'var(--brand-700)', Text: 'var(--neutral-600)', Surface: 'var(--info-600)', Spacing: 'var(--success-700)', Typography: 'var(--warning-600)', Radius: 'var(--error-600)' };
   return React.createElement(Section, { id: 'table', kicker: 'New Components', title: 'Table', intro: 'A dense data table primitive for token inventories, analytics, and documentation grids.' },
-    React.createElement('div', { style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)', overflowX: 'auto' } },
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-mono)', fontSize: 12 } },
+    React.createElement('div', { style: { overflowX: 'auto' } },
+      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', border: '1px solid var(--border-default)' } },
         React.createElement('thead', null,
-          React.createElement('tr', { style: { background: 'var(--neutral-50)', borderBottom: '2px solid var(--border-default)' } },
-            ['Token', 'Value', 'Type', 'Scope', 'Usage'].map(h => React.createElement('th', { key: h, style: { padding: '10px 14px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', whiteSpace: 'nowrap' } }, h))
+          React.createElement('tr', { style: { background: 'var(--surface-subtle)', borderBottom: '2px solid var(--border-default)' } },
+            ...columns.map((c) => React.createElement('th', { key: c, style: { padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 700 } }, c))
           )
         ),
         React.createElement('tbody', null,
-          rows.map((r, i) => React.createElement('tr', { key: r.token, style: { borderTop: i ? '1px solid var(--border-subtle)' : 'none' },
-            onMouseEnter: e => e.currentTarget.style.background = 'var(--state-hover)',
-            onMouseLeave: e => e.currentTarget.style.background = 'transparent'
-          },
-            React.createElement('td', { style: { padding: '10px 14px', color: 'var(--text-primary)', fontWeight: 600 } }, r.token),
-            React.createElement('td', { style: { padding: '10px 14px', color: 'var(--text-secondary)' } }, r.value),
-            React.createElement('td', { style: { padding: '10px 14px' } },
-              React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, padding: '2px 7px', background: 'var(--neutral-100)', color: 'var(--text-muted)', border: '1px solid var(--border-default)' } }, r.type)
-            ),
-            React.createElement('td', { style: { padding: '10px 14px' } },
-              React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, padding: '2px 7px', background: SCOPE_COLOR[r.scope], color: SCOPE_FG[r.scope] } }, r.scope)
-            ),
-            React.createElement('td', { style: { padding: '10px 14px', color: 'var(--text-muted)', fontSize: 11 } }, r.usage)
+          rows.map((r, i) => React.createElement('tr', { key: r.token, style: { borderTop: '1px solid var(--border-subtle)', background: 'var(--surface-default)' } },
+            React.createElement('td', { style: { padding: '12px 16px', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' } }, r.token),
+            React.createElement('td', { style: { padding: '12px 16px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' } }, r.value),
+            React.createElement('td', { style: { padding: '12px 16px' } }, React.createElement(Badge, { tone: 'neutral' }, r.type)),
+            React.createElement('td', { style: { padding: '12px 16px' } }, React.createElement(Badge, { tone: r.scope === 'Brand' ? 'brand' : r.scope === 'Surface' ? 'info' : r.scope === 'Spacing' ? 'success' : r.scope === 'Typography' ? 'warning' : 'error' }, r.scope)),
+            React.createElement('td', { style: { padding: '12px 16px', fontSize: 13, color: 'var(--text-muted)' } }, r.usage)
           ))
         )
       )
@@ -1032,16 +1319,16 @@ function StateMatrixSection() {
     { name: 'Button', render: function(state) {
         if (state === 'Disabled') return React.createElement(Button, { variant: 'primary', disabled: true }, 'Disabled');
         if (state === 'Loading') return React.createElement('button', {
-          style: { display: 'inline-flex', alignItems: 'center', gap: 8, height: 44, padding: '0 20px', background: 'var(--action-primary)', color: 'var(--text-on-brand)', border: 'none', fontFamily: 'var(--font-mono)', fontSize: 12, cursor: 'default' }
+          style: { display: 'inline-flex', alignItems: 'center', gap: 8, height: 44, padding: '0 20px', background: 'var(--action-primary)', color: 'var(--text-inverse)', border: 'none', fontFamily: 'var(--font-mono)', fontSize: 12, cursor: 'default' }
         },
-          React.createElement('span', { style: { width: 12, height: 12, border: '2px solid rgba(128,128,128,0.4)', borderTopColor: 'var(--text-on-brand)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' } }),
+          React.createElement('span', { style: { width: 12, height: 12, border: '2px solid rgba(128,128,128,0.4)', borderTopColor: 'var(--text-inverse)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' } }),
           'Loading'
         );
         const styleMap = {
-          Default: { background: 'var(--action-primary)', color: 'var(--text-on-brand)' },
-          Hover:   { background: 'var(--action-primary-hover)', color: 'var(--text-on-brand)' },
-          Focus:   { background: 'var(--action-primary)', color: 'var(--text-on-brand)', boxShadow: '0 0 0 3px var(--brand-300)', outline: 'none' },
-          Active:  { background: 'var(--action-primary-active)', color: 'var(--text-on-brand)', transform: 'scale(0.98)' },
+          Default: { background: 'var(--action-primary)', color: 'var(--text-inverse)' },
+          Hover:   { background: 'var(--action-primary-hover)', color: 'var(--text-inverse)' },
+          Focus:   { background: 'var(--action-primary)', color: 'var(--text-inverse)', boxShadow: '0 0 0 3px var(--brand-300)', outline: 'none' },
+          Active:  { background: 'var(--action-primary-active)', color: 'var(--text-inverse)', transform: 'scale(0.98)' },
         };
         return React.createElement('button', {
           style: { display: 'inline-flex', alignItems: 'center', height: 44, padding: '0 20px', border: '1px solid var(--border-strong)', fontFamily: 'var(--font-mono)', fontSize: 12, cursor: 'default', transition: 'none', ...styleMap[state] }
@@ -1075,10 +1362,10 @@ function StateMatrixSection() {
     React.createElement('div', { style: { overflowX: 'auto' } },
       React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', border: '1px solid var(--border-default)' } },
         React.createElement('thead', null,
-          React.createElement('tr', { style: { background: 'var(--neutral-50)', borderBottom: '2px solid var(--border-default)' } },
+          React.createElement('tr', { style: { background: 'var(--surface-subtle)', borderBottom: '2px solid var(--border-default)' } },
             React.createElement('th', { style: { padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 700, width: 110, background: 'var(--surface-subtle)' } }, 'Component'),
             ...states.map(function(s) {
-              return React.createElement('th', { key: s, style: { padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 700, borderLeft: '1px solid var(--border-subtle)' } }, s);
+              return React.createElement('th', { key: s, style: { padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 700, borderLeft: '1px solid var(--border-subtle)', background: 'var(--surface-subtle)' } }, s);
             })
           )
         ),
@@ -1107,6 +1394,13 @@ function ThemeSwitcher() {
   function applyTheme(key) {
     document.documentElement.removeAttribute('data-theme');
     if (key !== 'light') document.documentElement.setAttribute('data-theme', key);
+    ['--surface-canvas', '--brand-500', '--neutral-900', '--action-primary'].forEach(p => {
+      document.documentElement.style.removeProperty(p);
+    });
+    ['50','100','200','300','400','500','600','700','800','900','950'].forEach(s => {
+      document.documentElement.style.removeProperty(`--brand-${s}`);
+      document.documentElement.style.removeProperty(`--accent-${s}`);
+    });
     localStorage.setItem('ds-theme', key);
     setActiveTheme(key);
   }
@@ -1455,11 +1749,11 @@ function App() {
         /* Export dropdown */
         React.createElement('div', { style: { position: 'relative' } },
           React.createElement(Button, { variant: 'primary', size: 'sm', fullWidth: true, iconLeft: 'download', iconRight: 'chevron-down', onClick: () => setExportOpen(o => !o) }, 'Export Tokens'),
-          exportOpen && React.createElement('div', { style: { position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 4, background: 'var(--surface-default)', border: '1px solid var(--border-default)', zIndex: 50, display: 'flex', flexDirection: 'column' } },
+          exportOpen && React.createElement('div', { style: { position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 4, background: 'var(--surface-default)', border: '1px solid var(--border-strong)', boxShadow: 'var(--shadow-lg)', zIndex: 100, display: 'flex', flexDirection: 'column' } },
             [['Figma Variables (.json)', figmaExport, 'figma'], ['CSS Custom Properties', cssExport, 'css'], ['W3C DTCG JSON', dtcgExport, 'dtcg'], ['Tailwind Config', tailwindExport, 'tw'], ['TypeScript Constants', tsExport, 'ts']].map(([label, fn, key]) =>
-              React.createElement('button', { key, onClick: () => { fn(); setExportOpen(false); }, style: { padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.08em', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', color: 'var(--text-primary)' },
-                onMouseEnter: e => e.target.style.background = 'var(--state-selected)',
-                onMouseLeave: e => e.target.style.background = 'transparent'
+              React.createElement('button', { key, onClick: () => { fn(); setExportOpen(false); }, style: { padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.08em', textAlign: 'left', background: 'var(--surface-default)', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', color: 'var(--text-primary)' },
+                onMouseEnter: e => { e.target.style.background = 'var(--brand-500)'; e.target.style.color = 'var(--text-on-brand)'; },
+                onMouseLeave: e => { e.target.style.background = 'var(--surface-default)'; e.target.style.color = 'var(--text-primary)'; }
               }, '↓  ' + label)))),
         React.createElement('a', { href: 'Brand Guidelines.html', style: { textDecoration: 'none' } }, React.createElement(Button, { variant: 'outline', size: 'sm', fullWidth: true, style: { pointerEvents: 'none' } }, 'Brand Guidelines')))),
     /* main */

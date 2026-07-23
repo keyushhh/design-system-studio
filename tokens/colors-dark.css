@@ -11,7 +11,7 @@
    step lighter where it must read as text on a dark surface.
    ============================================================ */
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"], [data-theme="dark"] {
   color-scheme: dark; /* native form controls, scrollbars, date pickers */
 
   /* ---- Dark neutral ladder (0 = deepest, 950 = brightest) ----
@@ -32,21 +32,24 @@
   --neutral-900: #f2f2f2;  /* primary text       (light: #171717) */
   --neutral-950: #fafafa;
 
-  /* ---- Surfaces that referenced pure white ----
-     Cards must sit ABOVE the canvas, so raise them a step. */
-  --surface-default: var(--neutral-100);  /* cards, panels */
-  --surface-subtle:  #1a1917;             /* warm dark editorial panel */
-  --surface-sunken:  var(--neutral-50);   /* wells, inputs, below cards */
-  /* --surface-canvas (neutral-50) and --surface-inverse (neutral-900)
-     cascade correctly from the ladder above. */
+  /* ---- Text & Background Contrast Fixes ---- */
+  --text-primary:      #f3f4f6;  /* High contrast light text */
+  --text-secondary:    #d1d5db;  /* Secondary readable text */
+  --text-muted:        #9ca3af;  /* Muted metadata text */
+  --text-faint:        #6b7280;  /* Faint labels */
+  --text-inverse:      #09090b;  /* Dark text on light inverse buttons */
+  --text-link:         var(--brand-400);
 
-  /* ---- Text that referenced pure white / black ----
-     On the (now light) inverse surface, inverse text must be dark. */
-  --text-inverse: var(--neutral-0);
-  /* --text-on-brand stays white: white on emerald reads in both modes. */
+  --surface-canvas:    #09090b;  /* Deep dark canvas background */
+  --surface-default:   #18181b;  /* Elevated panel surface */
+  --surface-subtle:    #27272a;  /* Subtle section container background */
+  --border-default:    #27272a;  /* Hairline panel border */
+  --border-strong:     #3f3f46;  /* Strong element border */
+  --border-subtle:     #1f1f23;  /* Faint table/divider line */
 
-  /* ---- Borders ---- */
-  --border-inverse: rgba(0, 0, 0, 0.24);
+  --action-primary:        #f3f4f6;  /* Primary action button on dark theme is light */
+  --action-primary-hover:  #e5e7eb;  /* Hover state */
+  --action-primary-active: #d1d5db;  /* Active state */
 
   /* ---- Brand accent ----
      Solid emerald surfaces stay 500/600; anything that reads as

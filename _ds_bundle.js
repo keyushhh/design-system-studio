@@ -497,22 +497,22 @@ const VARIANTS = {
     hoverBg: 'var(--action-brand-hover)'
   },
   secondary: {
-    background: 'var(--neutral-100)',
+    background: 'var(--surface-subtle)',
     color: 'var(--text-primary)',
     border: '1px solid var(--border-default)',
-    hoverBg: 'var(--neutral-200)'
+    hoverBg: 'var(--state-hover)'
   },
   outline: {
     background: 'transparent',
     color: 'var(--text-primary)',
     border: '1px solid var(--border-strong)',
-    hoverBg: 'var(--neutral-100)'
+    hoverBg: 'var(--state-hover)'
   },
   ghost: {
     background: 'transparent',
     color: 'var(--text-secondary)',
     border: '1px solid transparent',
-    hoverBg: 'var(--neutral-100)'
+    hoverBg: 'var(--state-hover)'
   },
   danger: {
     background: 'var(--error-600)',

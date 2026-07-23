@@ -4,14 +4,18 @@
    Pure black/white, thick borders, no brand-tinted surfaces.
    ============================================================ */
 
-:root[data-theme="hc"] {
+:root[data-theme="hc"], [data-theme="hc"] {
   --surface-canvas:        #000000;
   --surface-default:       #0a0a0a;
-  --surface-subtle:        #111111;
+  --surface-subtle:        #141414;
   --surface-sunken:        #000000;
   --surface-inverse:       #ffffff;
   --surface-brand:         #ffffff;
-  --surface-brand-subtle:  #111111;
+  --surface-brand-subtle:  #141414;
+
+  --neutral-50:            #141414;
+  --neutral-100:           #1a1a1a;
+  --neutral-200:           #262626;
 
   --text-primary:   #ffffff;
   --text-secondary: #e5e5e5;
@@ -25,7 +29,7 @@
 
   --border-subtle:  #404040;
   --border-default: #737373;
-  --border-strong:  #d4d4d4;
+  --border-strong:  #ffffff;
   --border-brand:   #6ee7b7;
   --border-inverse: rgba(0,0,0,0.4);
 
@@ -34,14 +38,14 @@
   --action-primary-active: #d4d4d4;
   --action-brand:          #6ee7b7;
   --action-brand-hover:    #a7f3d0;
-  --action-brand-subtle:   #111111;
+  --action-brand-subtle:   #141414;
 
   --focus-ring:         #6ee7b7;
   --state-hover:        #1a1a1a;
   --state-selected:     #0f2920;
   --state-selected-fg:  #6ee7b7;
   --state-disabled-bg:  #1a1a1a;
-  --state-disabled-fg:  #525252;
+  --state-disabled-fg:  #737373;
 
   --grid-line-color: rgba(255,255,255,0.06);
   --glow-bg: none;

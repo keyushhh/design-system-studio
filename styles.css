@@ -47,8 +47,9 @@
     box-sizing: border-box !important;
   }
 
-  .responsive-grid-3 {
+  .responsive-grid-3, .responsive-grid-2 {
     grid-template-columns: 1fr !important;
   }
 }
+
 
