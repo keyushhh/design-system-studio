@@ -586,6 +586,17 @@ function LiveTokenCustomizer({ push }) {
     { id: 'rose', name: 'Neon Rose', brand: '#f43f5e', accent: '#fb7185', dark: '#111827', canvas: '#f9fafb' },
   ];
 
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiScale, setAiScale] = useState(null);
+
+  const moodPresets = [
+    { label: '🤖 Cyberpunk Neon', brand: '#f43f5e', accent: '#06b6d4' },
+    { label: '🏛️ Luxury Gold', brand: '#d97706', accent: '#fbbf24' },
+    { label: '🌲 Nordic Forest', brand: '#059669', accent: '#10b981' },
+    { label: '🍇 Electric Violet', brand: '#8b5cf6', accent: '#ec4899' },
+    { label: '🌊 Ocean Minimal', brand: '#0284c7', accent: '#38bdf8' }
+  ];
+
   const applyBrandColor = (hex) => {
     setBrand500(hex);
     const scale = generateScale(hex, 'brand');
@@ -600,6 +611,33 @@ function LiveTokenCustomizer({ push }) {
     Object.keys(scale).forEach(prop => {
       document.documentElement.style.setProperty(prop, scale[prop]);
     });
+  };
+
+  const generateAiPalette = (customText) => {
+    const query = (customText || aiPrompt).toLowerCase();
+    let b = '#10b981', a = '#22c55e';
+    if (query.includes('cyber') || query.includes('neon') || query.includes('synth')) { b = '#f43f5e'; a = '#06b6d4'; }
+    else if (query.includes('gold') || query.includes('lux') || query.includes('amber')) { b = '#d97706'; a = '#fbbf24'; }
+    else if (query.includes('nord') || query.includes('forest') || query.includes('green')) { b = '#059669'; a = '#10b981'; }
+    else if (query.includes('violet') || query.includes('purple') || query.includes('grape')) { b = '#8b5cf6'; a = '#ec4899'; }
+    else if (query.includes('ocean') || query.includes('blue') || query.includes('water')) { b = '#0284c7'; a = '#38bdf8'; }
+    else {
+      // Deterministic hash hue generator for arbitrary prompts
+      let hash = 0;
+      for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+      const h1 = Math.abs(hash) % 360;
+      const h2 = (h1 + 40) % 360;
+      b = hslToHex(h1, 75, 48);
+      a = hslToHex(h2, 80, 55);
+    }
+
+    setAiScale({ brand: b, accent: a, prompt: customText || aiPrompt });
+    applyBrandColor(b);
+    applyAccentColor(a);
+    localStorage.setItem('ds-active-brand', b);
+    localStorage.setItem('ds-active-accent', a);
+    window.dispatchEvent(new CustomEvent('ds-tokens-updated', { detail: { brand: b, accent: a } }));
+    if (push) push({ title: 'AI OKLCH Scale Generated', message: `Generated scale for "${customText || aiPrompt}"`, tone: 'brand' });
   };
 
   const updateToken = (type, value) => {
@@ -671,6 +709,30 @@ function LiveTokenCustomizer({ push }) {
         React.createElement('span', { style: { width: 10, height: 10, borderRadius: '50%', background: p.brand } }),
         p.name
       ))
+    ),
+    /* AI OKLCH Generator Bar */
+    React.createElement('div', { style: { padding: 16, marginBottom: 24, background: 'var(--surface-subtle)', border: '1px solid var(--border-default)', display: 'flex', flexDirection: 'column', gap: 12 } },
+      React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+        React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--brand-600)' } }, '✨ AI OKLCH Scale Generator'),
+        React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, 'Offline Perceptual Lightness Engine')
+      ),
+      React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
+        React.createElement('div', { style: { flex: 1 } },
+          React.createElement(Input, { size: 'sm', placeholder: 'Describe palette mood (e.g. Cyberpunk Neon, Luxury Gold, Nordic Forest)…', value: aiPrompt, onChange: e => setAiPrompt(e.target.value) })
+        ),
+        React.createElement(Button, { variant: 'brand', size: 'sm', iconLeft: 'sliders', onClick: () => generateAiPalette() }, 'Generate AI Palette')
+      ),
+      React.createElement('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
+        React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', marginRight: 4 } }, 'Quick Moods:'),
+        moodPresets.map(m => React.createElement('button', {
+          key: m.label,
+          onClick: () => { setAiPrompt(m.label); generateAiPalette(m.label); },
+          style: { padding: '4px 9px', fontFamily: 'var(--font-mono)', fontSize: 10, border: '1px solid var(--border-default)', background: 'var(--surface-default)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }
+        },
+          React.createElement('span', { style: { width: 8, height: 8, borderRadius: '50%', background: m.brand } }),
+          m.label
+        ))
+      )
     ),
     React.createElement('div', { className: 'responsive-grid-2', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 } },
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },

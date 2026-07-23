@@ -1,35 +1,51 @@
 # Design System Studio
 
-Design System Studio is an open-source, production-grade design system, token engine, and component library built with modern CSS standards, modular UI primitives, and flexible presentation tools.
-
-> **Design System Studio** provides a complete design foundation for web applications and editorial presentations. It pairs a light/dark token architecture with clean typographic rules, crisp layouts, and responsive component primitives.
+> An open-source, production-grade **Design System Engine**, **Token Studio**, and **Component Library** built with modern web standards, OKLCH color spaces, zero-build ES module architecture, and brand guidelines PDF generation.
 
 ---
 
-## Features
+## Key Highlights & Features
 
-- **Token Engine**: Complete color system (light & opt-in dark mode), typography scales, spatial system, radii, shadows, and layout grids.
-- **Core UI Primitives**: Production-ready React & CSS components including Buttons, Inputs, Cards, Badges, Tabs, Tooltips, Toasts, and Upload Zones.
-- **Master Presentation Framework**: 14 editorial slide templates tailored for executive summaries, comparative tables, metrics dashboards, and roadmaps.
-- **Dark Mode Support**: Seamless dark theme override layer (`tokens/colors-dark.css`) respecting contrast ratios and component tokens.
-- **Figma & Design Tooling Integration**: Exportable token specs (`.json`) compatible with modern design tools.
-- **Interactive Documentation SPA**: Standalone browser-based studio to preview components, view token specs, and test interactive states.
+### 1. Perceptual Token Engine & AI Scale Generator
+- **OKLCH Algorithmic Color Engine**: Uniform 10-step primary (`50`–`950`) and secondary accent scales generated in perceptual color space.
+- **AI Mood Palette Generator**: Describe any palette mood (*Cyberpunk Neon*, *Luxury Gold*, *Nordic Forest*, *Electric Violet*, *Ocean Minimal*) or seed color to generate complete brand scales instantly.
+- **Live Token Customizer**: Real-time hex color pickers and swatch customizers with instant platform-wide style cascade.
+
+### 2. Multi-Theme Architecture (Light, Dark, High-Contrast AAA)
+- **3-Way Theme Switcher**: Toggle seamlessly between Light Mode, Dark Mode, and High Contrast (WCAG AAA accessibility mode with high-contrast surfaces).
+- **Automated WCAG Auditor**: Built-in real-time WCAG contrast checker rating surface/text pairs with AA/AAA compliance badges.
+
+### 3. Interactive Font Playground & Google Fonts Swapper
+- **Dynamic Google Fonts Injection**: Swap display (`--font-display`), body (`--font-sans`), and mono (`--font-mono`) typefaces on the fly.
+- **Type Tester & Custom Search**: Test curated presets (*Space Grotesk*, *Satoshi*, *JetBrains Mono*, *Outfit*, *Inter*, *Syne*, *Playfair Display*) or type any font name from Google Fonts.
+
+### 4. Exportable PDF Brand Guidelines
+- **Live Identity Manual**: Standalone 9-page visual identity manual (`Brand Guidelines.html`) reflecting real-time token selections, color swatches, typography rules, and logo clear-space specs.
+- **One-Click PDF Export**: Built-in print CSS rules to download the full brand book as a PDF with a single click.
+
+### 5. Multi-Format Export Engine
+- **Figma Variables (.json)**: Compatible with Figma native variable import specs.
+- **Web Components (.js)**: Framework-agnostic native HTML5 Custom Elements (`<ds-button>`, `<ds-badge>`, `<ds-card>`) with Shadow DOM encapsulation.
+- **W3C DTCG JSON**: Standard design token format.
+- **Tailwind CSS Config**: Automated `tailwind.config.js` extension output.
+- **TypeScript Constants**: Type-safe design token constants for TS codebases.
+- **CSS Custom Properties**: Native `--brand-500`, `--neutral-900` variables.
 
 ---
 
 ## Tech Stack
 
-- **Core**: Vanilla HTML5, JavaScript (ES6+), React 18
-- **Styling**: Vanilla CSS (CSS Variables, Flexbox, Grid, CSS Color Module Level 4)
-- **Typography**: Space Grotesk (Display), Satoshi (Body/Interface), JetBrains Mono (Code/Metadata)
+- **Core**: Vanilla HTML5, ES6 Modules, React 18
+- **Styling**: Vanilla CSS (CSS Variables, Color Module Level 4, Flexbox, Grid)
+- **Typography**: Google Fonts API, Space Grotesk, Satoshi, JetBrains Mono
 - **Icons**: Lucide SVG System
-- **Bundling / Runtime**: Native ES Modules & Babel Standalone (No heavy node build pipeline required)
+- **Architecture**: Zero-Build Browser Compatible (ES Modules & Babel Standalone)
 
 ---
 
-## Local Development
+## Getting Started Locally
 
-Since Design System Studio relies on native browser ES modules and CSS custom properties, no node installation or build step is strictly required to get started.
+Design System Studio requires **zero Node compilation or build pipelines**.
 
 1. **Clone the repository**:
    ```bash
@@ -37,77 +53,39 @@ Since Design System Studio relies on native browser ES modules and CSS custom pr
    cd design-system-studio
    ```
 
-2. **Serve locally**:
-   Use any standard static file server (e.g. Python, `npx serve`, or VS Code Live Server):
+2. **Run local server**:
    ```bash
-   python3 -m http.server 8000
+   npx serve .
    ```
 
 3. **Open in browser**:
-   Navigate to `http://localhost:8000/` or `http://localhost:8000/DesignSystem.html`.
+   Navigate to `http://localhost:3000/DesignSystem.html` (Studio Engine) or `http://localhost:3000/Brand%20Guidelines.html` (Brand Book PDF).
 
 ---
 
-## Build Instructions & Usage
+## Project Structure
 
-To integrate Design System Studio into an existing web project:
-
-1. Import global styles and token definitions in your HTML header:
-   ```html
-   <link rel="stylesheet" href="styles.css">
-   <script src="theme-init.js"></script>
-   ```
-
-2. Use CSS variables directly in your application:
-   ```css
-   .my-card {
-     background-color: var(--surface-card);
-     border: 1px solid var(--border-subtle);
-     border-radius: var(--radius-md);
-     padding: var(--space-4);
-   }
-   ```
-
----
-
-## Deployment
-
-Deploying Design System Studio is straight-forward as it consists of static web assets.
-
-### Vercel / Netlify / GitHub Pages
-- **Build Command**: None (Static)
-- **Output Directory**: `./` (Root directory)
-
----
-
-## Folder Structure
-
-```
+```text
 .
-├── assets/         # Font archives, logo assets, and static media
-├── components/     # UI component definitions (Core, Forms, Feedback, Navigation)
-├── guidelines/     # Specimen pages for colors, typography, spacing, and brand rules
-├── presets/        # Utility scripts (Grid glow, interactive background effects)
-├── slides/         # 14 Master Presentation slide templates and renderers
-├── templates/      # Master Presentation starter decks and PPTX templates
-├── tokens/         # CSS design tokens (Colors, Typography, Spacing, Dark Theme)
-├── DesignSystem.html # Single-page documentation studio
-├── designsystem.app.jsx # Main React app for the interactive studio
-├── styles.css      # Core entry point importing all design tokens
-└── theme-init.js   # Instant theme detection and application script
+├── assets/                  # Font archives, logos, and static media
+├── components/              # React UI primitives (Buttons, Cards, Inputs, Badges, Tabs)
+│   ├── core/
+│   ├── forms/
+│   ├── feedback/
+│   └── navigation/
+├── tokens/                  # CSS token layers
+│   ├── colors.css           # Base color variables & light theme
+│   ├── colors-dark.css      # Dark mode override layer
+│   └── colors-hc.css        # High contrast WCAG AAA mode
+├── DesignSystem.html        # Interactive Single-Page Studio Application
+├── designsystem.app.jsx     # Main React Studio App & Token Engine
+├── Brand Guidelines.html    # 9-page PDF Brand Manual
+├── theme-init.js            # Blocking theme & token restoration script
+└── styles.css               # Global stylesheet entry point
 ```
-
----
-
-## Roadmap
-
-- [ ] **v1.1**: Expand accessibility (a11y) automated auditing and ARIA patterns.
-- [ ] **v1.2**: Web Components (Custom Elements) wrapper export.
-- [ ] **v1.3**: Automated Figma Token Sync via GitHub Actions.
-- [ ] **v1.4**: Storybook integration package.
 
 ---
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for more details.
+Distributed under the MIT License. See `LICENSE` for more information.
