@@ -353,7 +353,10 @@ function OnboardingWizard({ open, onClose, push }) {
           )
         ),
         React.createElement('button', {
-          onClick: onClose,
+          onClick: () => {
+            localStorage.setItem('ds-wizard-completed', 'true');
+            onClose();
+          },
           style: { background: 'transparent', border: '1px solid var(--border-default)', padding: 6, color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
           onMouseEnter: e => e.currentTarget.style.borderColor = 'var(--border-strong)',
           onMouseLeave: e => e.currentTarget.style.borderColor = 'var(--border-default)'
@@ -568,12 +571,21 @@ function LiveTokenCustomizer({ push }) {
     const handleUpdate = (e) => {
       if (e.detail?.brand) setBrand500(e.detail.brand);
       if (e.detail?.accent) setAccent500(e.detail.accent);
-      setActivePreset('custom');
+      const matched = presets.find(p => p.brand.toLowerCase() === (e.detail?.brand || '').toLowerCase());
+      setActivePreset(matched ? matched.id : 'custom');
     };
     const savedBrand = localStorage.getItem('ds-active-brand');
     const savedAccent = localStorage.getItem('ds-active-accent');
+    const savedPreset = localStorage.getItem('ds-active-preset');
     if (savedBrand) setBrand500(savedBrand);
     if (savedAccent) setAccent500(savedAccent);
+
+    if (savedPreset) {
+      setActivePreset(savedPreset);
+    } else if (savedBrand) {
+      const matched = presets.find(p => p.brand.toLowerCase() === savedBrand.toLowerCase());
+      setActivePreset(matched ? matched.id : 'custom');
+    }
 
     window.addEventListener('ds-tokens-updated', handleUpdate);
     return () => window.removeEventListener('ds-tokens-updated', handleUpdate);
@@ -599,6 +611,7 @@ function LiveTokenCustomizer({ push }) {
 
   const applyBrandColor = (hex) => {
     setBrand500(hex);
+    localStorage.setItem('ds-active-brand', hex);
     const scale = generateScale(hex, 'brand');
     Object.keys(scale).forEach(prop => {
       document.documentElement.style.setProperty(prop, scale[prop]);
@@ -607,6 +620,7 @@ function LiveTokenCustomizer({ push }) {
 
   const applyAccentColor = (hex) => {
     setAccent500(hex);
+    localStorage.setItem('ds-active-accent', hex);
     const scale = generateScale(hex, 'accent');
     Object.keys(scale).forEach(prop => {
       document.documentElement.style.setProperty(prop, scale[prop]);
@@ -647,7 +661,10 @@ function LiveTokenCustomizer({ push }) {
     else if (type === 'neutral') {
       setNeutral900(value);
       document.documentElement.style.setProperty('--neutral-900', value);
-      document.documentElement.style.setProperty('--action-primary', value);
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (!isDark) {
+        document.documentElement.style.setProperty('--action-primary', value);
+      }
     } else if (type === 'canvas') {
       setSurfaceCanvas(value);
       document.documentElement.style.setProperty('--surface-canvas', value);
@@ -656,11 +673,15 @@ function LiveTokenCustomizer({ push }) {
 
   const applyPreset = (preset) => {
     setActivePreset(preset.id);
+    localStorage.setItem('ds-active-preset', preset.id);
     applyBrandColor(preset.brand);
     applyAccentColor(preset.accent);
     setNeutral900(preset.dark);
     document.documentElement.style.setProperty('--neutral-900', preset.dark);
-    document.documentElement.style.setProperty('--action-primary', preset.dark);
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (!isDark) {
+      document.documentElement.style.setProperty('--action-primary', preset.dark);
+    }
     document.documentElement.style.removeProperty('--surface-canvas');
     if (push) push({ title: 'Preset Applied', message: preset.name + ' full scale active', tone: 'brand' });
   };
@@ -1121,7 +1142,6 @@ function ElevationSection() {
 }
 /* SVG bezier curve visualizer for easing section */
 function EasingCurveSVG({ cp, go }) {
-  // cp = [x1, y1, x2, y2] in 0-1 space; SVG is 80x80, flipped Y
   const S = 80;
   const toSVG = ([x, y]) => [x * S, S - y * S];
   const [ax, ay] = toSVG([0, 0]);
@@ -1129,24 +1149,53 @@ function EasingCurveSVG({ cp, go }) {
   const [cx2, cy2] = toSVG([cp[2], cp[3]]);
   const [dx, dy] = toSVG([1, 1]);
   const d = `M ${ax} ${ay} C ${bx} ${by}, ${cx2} ${cy2}, ${dx} ${dy}`;
-  // animated dot progress along the bezier
-  const t = go ? 1 : 0;
-  const dotX = go ? dx : ax;
-  const dotY = go ? dy : ay;
-  return React.createElement('svg', { width: S, height: S, viewBox: `0 0 ${S} ${S}`, style: { display: 'block' } },
-    // grid
-    React.createElement('line', { x1: 0, y1: S, x2: S, y2: S, stroke: 'var(--border-default)', strokeWidth: 1 }),
-    React.createElement('line', { x1: 0, y1: 0, x2: 0, y2: S, stroke: 'var(--border-default)', strokeWidth: 1 }),
-    // control point handles
-    React.createElement('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: 'var(--neutral-300)', strokeWidth: 1, strokeDasharray: '3 2' }),
-    React.createElement('line', { x1: dx, y1: dy, x2: cx2, y2: cy2, stroke: 'var(--neutral-300)', strokeWidth: 1, strokeDasharray: '3 2' }),
-    React.createElement('circle', { cx: bx, cy: by, r: 3, fill: 'var(--neutral-300)' }),
-    React.createElement('circle', { cx: cx2, cy: cy2, r: 3, fill: 'var(--neutral-300)' }),
-    // curve
-    React.createElement('path', { d, fill: 'none', stroke: 'var(--brand-500)', strokeWidth: 2, strokeLinecap: 'round' }),
-    // animated dot
-    React.createElement('circle', { cx: dotX, cy: dotY, r: 5, fill: 'var(--brand-500)',
-      style: { transition: `cx 700ms cubic-bezier(${cp.join(',')}), cy 700ms cubic-bezier(${cp.join(',')})` } }));
+
+  const computeBezierPoint = (t) => {
+    const mt = 1 - t;
+    const mt2 = mt * mt;
+    const mt3 = mt2 * mt;
+    const t2 = t * t;
+    const t3 = t2 * t;
+    const x = mt3 * 0 + 3 * mt2 * t * cp[0] + 3 * mt * t2 * cp[2] + t3 * 1;
+    const y = mt3 * 0 + 3 * mt2 * t * cp[1] + 3 * mt * t2 * cp[3] + t3 * 1;
+    return toSVG([x, y]);
+  };
+
+  // Generate 20 sampled keyframes along the cubic bezier path
+  const keyframes = Array.from({ length: 21 }, (_, i) => {
+    const t = i / 20;
+    const [px, py] = computeBezierPoint(t);
+    return { percent: (i * 5), px, py };
+  });
+
+  const animName = `bezier_anim_${cp.join('_').replace(/[\.,]/g, '_')}`;
+
+  return React.createElement('div', { style: { position: 'relative', width: S, height: S } },
+    React.createElement('style', null, `
+      @keyframes ${animName} {
+        ${keyframes.map(k => `${k.percent}% { transform: translate(${k.px}px, ${k.py}px); }`).join('\n')}
+      }
+      .${animName}-dot {
+        animation: ${animName} 1.4s ease-in-out infinite alternate;
+      }
+    `),
+    React.createElement('svg', { width: S, height: S, viewBox: `0 0 ${S} ${S}`, style: { display: 'block', position: 'absolute', top: 0, left: 0 } },
+      React.createElement('line', { x1: 0, y1: S, x2: S, y2: S, stroke: 'var(--border-default)', strokeWidth: 1 }),
+      React.createElement('line', { x1: 0, y1: 0, x2: 0, y2: S, stroke: 'var(--border-default)', strokeWidth: 1 }),
+      React.createElement('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: 'var(--neutral-300)', strokeWidth: 1, strokeDasharray: '3 2' }),
+      React.createElement('line', { x1: dx, y1: dy, x2: cx2, y2: cy2, stroke: 'var(--neutral-300)', strokeWidth: 1, strokeDasharray: '3 2' }),
+      React.createElement('circle', { cx: bx, cy: by, r: 3, fill: 'var(--neutral-300)' }),
+      React.createElement('circle', { cx: cx2, cy: cy2, r: 3, fill: 'var(--neutral-300)' }),
+      React.createElement('path', { d, fill: 'none', stroke: 'var(--brand-500)', strokeWidth: 2, strokeLinecap: 'round' })
+    ),
+    React.createElement('div', {
+      className: `${animName}-dot`,
+      style: {
+        position: 'absolute', top: -5, left: -5, width: 10, height: 10,
+        borderRadius: '50%', background: 'var(--brand-500)', pointerEvents: 'none'
+      }
+    })
+  );
 }
 
 function MotionSection() {
@@ -1177,7 +1226,7 @@ function MotionSection() {
     React.createElement(Panel, null,
       React.createElement('div', { style: { display: 'flex', gap: 40, alignItems: 'center', flexWrap: 'wrap' } },
         React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } },
-          React.createElement(Button, { variant: 'primary' }, 'Hover me'),
+          React.createElement(Button, { variant: 'primary', style: { background: 'var(--brand-600)', color: 'var(--pure-white)' } }, 'Hover me'),
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, 'darken · 150ms')),
         React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } },
           React.createElement('input', { placeholder: 'Focus me', style: { height: 44, padding: '0 14px', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)', fontSize: 14, outline: 'none', color: 'var(--text-primary)' }, onFocus: (ev) => { ev.target.style.borderColor = 'var(--brand-500)'; ev.target.style.boxShadow = '0 0 0 2px var(--brand-100)'; }, onBlur: (ev) => { ev.target.style.borderColor = 'var(--border-default)'; ev.target.style.boxShadow = 'none'; } }),
@@ -1468,7 +1517,7 @@ function AvatarSection({ push }) {
 /* ========== PROGRESS + SKELETON ========== */
 function ProgressSection() {
   const [progress, setProgress] = useState(65);
-  const Skeleton = ({ w = '100%', h = 16, style = {} }) => React.createElement('div', { style: { width: w, height: h, background: 'linear-gradient(90deg, var(--surface-subtle) 25%, var(--border-default) 50%, var(--surface-subtle) 75%)', backgroundSize: '200% 100%', animation: 'ds-shimmer 1.5s infinite', ...style } });
+  const Skeleton = ({ w = '100%', h = 16, style = {} }) => React.createElement('div', { style: { width: w, height: h, background: 'linear-gradient(90deg, var(--surface-subtle) 25%, var(--border-strong) 50%, var(--surface-subtle) 75%)', backgroundSize: '200% 100%', animation: 'ds-shimmer 1.5s infinite', ...style } });
   return React.createElement(Section, { id: 'progress', kicker: 'New Components', title: 'Progress & Skeleton', intro: 'Linear progress bars and skeleton shimmer loaders for async states.' },
     React.createElement('style', null, '@keyframes ds-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }'),
     React.createElement(Sub, null, 'Progress bar \u2014 interactive'),
@@ -1798,12 +1847,19 @@ function PatternCard({ href, title, desc, tag, target, rel }) {
 
 /* ---- Export: CSS Custom Properties ---- */
 function cssExport() {
+  const activeBrand = localStorage.getItem('ds-active-brand') || '#10b981';
+  const activeAccent = localStorage.getItem('ds-active-accent') || '#22c55e';
+  const brandScaleObj = generateScale(activeBrand, 'brand');
+  const accentScaleObj = generateScale(activeAccent, 'accent');
+
   const lines = [
     '/* Design System Studio — CSS Custom Properties */\n/* Generated: ' + new Date().toISOString().slice(0,10) + ' */\n',
     ':root {',
-    '  /* Brand · Emerald */',
+    '  /* Primary Brand Scale */',
   ];
-  Object.entries(HEX.brand).forEach(([k,v]) => lines.push(`  --brand-${k}: ${v};`));
+  Object.entries(brandScaleObj).forEach(([k,v]) => lines.push(`  ${k}: ${v};`));
+  lines.push('  /* Secondary Accent Scale */');
+  Object.entries(accentScaleObj).forEach(([k,v]) => lines.push(`  ${k}: ${v};`));
   lines.push('  /* Neutral */');
   Object.entries(HEX.neutral).forEach(([k,v]) => lines.push(`  --neutral-${k}: ${v};`));
   lines.push('  /* Semantic */');
@@ -1826,11 +1882,20 @@ function cssExport() {
 
 /* ---- Export: W3C DTCG JSON ---- */
 function dtcgExport() {
+  const activeBrand = localStorage.getItem('ds-active-brand') || '#10b981';
+  const activeAccent = localStorage.getItem('ds-active-accent') || '#22c55e';
+  const brandScaleObj = generateScale(activeBrand, 'brand');
+  const accentScaleObj = generateScale(activeAccent, 'accent');
+
+  const brand = Object.fromEntries(Object.keys(brandScaleObj).map(k => [k.replace('--brand-', ''), brandScaleObj[k]]));
+  const accent = Object.fromEntries(Object.keys(accentScaleObj).map(k => [k.replace('--accent-', ''), accentScaleObj[k]]));
+
   const col = (hex) => ({ $type: 'color', $value: hex.toUpperCase() });
   const dim = (v) => ({ $type: 'dimension', $value: v });
   const font = (v) => ({ $type: 'fontFamily', $value: v });
   const tokens = {
-    brand: Object.fromEntries(Object.entries(HEX.brand).map(([k,v]) => [k, col(v)])),
+    brand: Object.fromEntries(Object.entries(brand).map(([k,v]) => [k, col(v)])),
+    accent: Object.fromEntries(Object.entries(accent).map(([k,v]) => [k, col(v)])),
     neutral: Object.fromEntries(Object.entries(HEX.neutral).map(([k,v]) => [k, col(v)])),
     success: Object.fromEntries(Object.entries(HEX.success).map(([k,v]) => [k, col(v)])),
     warning: Object.fromEntries(Object.entries(HEX.warning).map(([k,v]) => [k, col(v)])),
@@ -1853,11 +1918,20 @@ function dtcgExport() {
 
 /* ---- Export: Tailwind Config ---- */
 function tailwindExport() {
+  const activeBrand = localStorage.getItem('ds-active-brand') || '#10b981';
+  const activeAccent = localStorage.getItem('ds-active-accent') || '#22c55e';
+  const brandScaleObj = generateScale(activeBrand, 'brand');
+  const accentScaleObj = generateScale(activeAccent, 'accent');
+
+  const brand = Object.fromEntries(Object.keys(brandScaleObj).map(k => [k.replace('--brand-', ''), brandScaleObj[k]]));
+  const accent = Object.fromEntries(Object.keys(accentScaleObj).map(k => [k.replace('--accent-', ''), accentScaleObj[k]]));
+
   const tw = {
     theme: {
       extend: {
         colors: {
-          brand: Object.fromEntries(Object.entries(HEX.brand).map(([k,v]) => [k,v])),
+          brand: Object.fromEntries(Object.entries(brand).map(([k,v]) => [k,v])),
+          accent: Object.fromEntries(Object.entries(accent).map(([k,v]) => [k,v])),
           neutral: Object.fromEntries(Object.entries(HEX.neutral).map(([k,v]) => [k,v])),
           success: Object.fromEntries(Object.entries(HEX.success).map(([k,v]) => [k,v])),
           warning: Object.fromEntries(Object.entries(HEX.warning).map(([k,v]) => [k,v])),
@@ -1882,13 +1956,24 @@ function tailwindExport() {
 
 /* ---- Export: TypeScript constants ---- */
 function tsExport() {
+  const activeBrand = localStorage.getItem('ds-active-brand') || '#10b981';
+  const activeAccent = localStorage.getItem('ds-active-accent') || '#22c55e';
+  const brandScaleObj = generateScale(activeBrand, 'brand');
+  const accentScaleObj = generateScale(activeAccent, 'accent');
+
+  const brand = Object.fromEntries(Object.keys(brandScaleObj).map(k => [k.replace('--brand-', ''), brandScaleObj[k]]));
+  const accent = Object.fromEntries(Object.keys(accentScaleObj).map(k => [k.replace('--accent-', ''), accentScaleObj[k]]));
+
   const lines = [
     '// Design System Studio — TypeScript Token Constants',
     `// Generated: ${new Date().toISOString().slice(0,10)}`,
     '',
     'export const tokens = {',
     '  brand: {',
-    ...Object.entries(HEX.brand).map(([k,v]) => `    '${k}': '${v}',`),
+    ...Object.entries(brand).map(([k,v]) => `    '${k}': '${v}',`),
+    '  },',
+    '  accent: {',
+    ...Object.entries(accent).map(([k,v]) => `    '${k}': '${v}',`),
     '  },',
     '  neutral: {',
     ...Object.entries(HEX.neutral).map(([k,v]) => `    '${k}': '${v}',`),
@@ -2016,8 +2101,15 @@ function figmaExport() {
   const cScale = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, col(v)]));
   const nScale = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, num(v)]));
 
-  const brand = { 50:'#ECFDF5',100:'#D1FAE5',200:'#A7F3D0',300:'#6EE7B7',400:'#34D399',500:'#10B981',600:'#059669',650:'#047857',700:'#047857',800:'#065F46',900:'#064E3B',950:'#07070A' };
-  const accent = { 50:'#F0FDF4',100:'#DCFCE7',200:'#BBF7D0',300:'#86EFAC',400:'#4ADE80',500:'#22C55E',600:'#16A34A',650:'#15803D',700:'#15803D',800:'#166534',900:'#14532D',950:'#07070A' };
+  const activeBrand = localStorage.getItem('ds-active-brand') || '#10b981';
+  const activeAccent = localStorage.getItem('ds-active-accent') || '#22c55e';
+
+  const brandScaleObj = generateScale(activeBrand, 'brand');
+  const brand = Object.fromEntries(Object.keys(brandScaleObj).map(k => [k.replace('--brand-', ''), brandScaleObj[k]]));
+
+  const accentScaleObj = generateScale(activeAccent, 'accent');
+  const accent = Object.fromEntries(Object.keys(accentScaleObj).map(k => [k.replace('--accent-', ''), accentScaleObj[k]]));
+
   const neutral = { 50:'#FBFBFB',100:'#F5F5F5',200:'#E5E5E5',300:'#D4D4D4',400:'#A3A3A3',500:'#737373',600:'#525252',700:'#404040',800:'#262626',900:'#171717',950:'#0A0A0A' };
   const success = { 50:'#F0FDF4',100:'#DCFCE7',500:'#22C55E',600:'#16A34A',700:'#15803D' };
   const warning = { 50:'#FFFBEB',100:'#FEF3C7',500:'#F59E0B',600:'#D97706',700:'#B45309' };
@@ -2212,7 +2304,12 @@ function App() {
                 onMouseEnter: e => { e.target.style.background = 'var(--brand-500)'; e.target.style.color = 'var(--text-on-brand)'; },
                 onMouseLeave: e => { e.target.style.background = 'var(--surface-default)'; e.target.style.color = 'var(--text-primary)'; }
               }, '↓  ' + label)))),
-        React.createElement('a', { href: 'Brand Guidelines.html', style: { textDecoration: 'none' } }, React.createElement(Button, { variant: 'outline', size: 'sm', fullWidth: true, style: { pointerEvents: 'none' } }, 'Brand Guidelines')))),
+        React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+          React.createElement('a', { href: 'Brand Guidelines.html', style: { textDecoration: 'none' } }, React.createElement(Button, { variant: 'outline', size: 'sm', fullWidth: true, style: { pointerEvents: 'none' } }, 'Brand Manual')),
+          React.createElement('a', { href: 'CaseStudy.html', style: { textDecoration: 'none' } }, React.createElement(Button, { variant: 'outline', size: 'sm', fullWidth: true, style: { pointerEvents: 'none' } }, 'Case Study'))
+        )
+      )
+    ),
     /* main */
     React.createElement('main', { ref: mainRef, className: 'main-content', style: { flex: 1, overflowY: 'auto', height: '100%', position: 'relative' } },
       /* Top Right Navigation CTA Bar */
@@ -2276,15 +2373,15 @@ function App() {
       title: 'Scroll to Top',
       style: {
         position: 'fixed', bottom: 28, right: 28, zIndex: 900,
-        width: 44, height: 44, borderRadius: '50%',
-        background: 'var(--action-primary)', color: 'var(--text-inverse)',
-        border: '1px solid var(--border-strong)', boxShadow: 'var(--shadow-lg)',
+        width: 46, height: 46, borderRadius: '50%',
+        background: 'var(--brand-500)', color: '#ffffff',
+        border: '2px solid var(--surface-default)', boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
         transition: 'transform 0.15s ease, background 0.15s ease'
       },
       onMouseEnter: e => e.currentTarget.style.transform = 'scale(1.08)',
       onMouseLeave: e => e.currentTarget.style.transform = 'scale(1)'
-    }, React.createElement(Icon, { name: 'arrow-up', size: 18, style: { color: '#ffffff' } })),
+    }, React.createElement(Icon, { name: 'arrow-up', size: 20, style: { color: '#ffffff', strokeWidth: 2.5 } })),
     React.createElement(OnboardingWizard, { open: wizardOpen, onClose: () => setWizardOpen(false), push }),
     toastNode
   );

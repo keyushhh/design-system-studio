@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System Studio — Architectural Case Study</title>
+<script src="theme-init.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--surface-canvas);font-family:var(--font-sans);color:var(--text-primary);-webkit-font-smoothing:antialiased;line-height:1.6}
+.topbar{position:fixed;top:0;left:0;right:0;height:64px;background:var(--surface-default);border-bottom:1px solid var(--border-subtle);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 36px}
+.topbar a{color:var(--text-primary);text-decoration:none;font-family:var(--font-mono);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px}
+.container{max-width:920px;margin:120px auto 140px;padding:0 24px}
+.kicker{font-family:var(--font-mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--brand-500);margin-bottom:16px}
+.title{font-family:var(--font-display);font-size:56px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-bottom:24px}
+.subtitle{font-size:20px;color:var(--text-secondary);line-height:1.6;margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border-subtle)}
+.section{margin-bottom:72px}
+.section h2{font-family:var(--font-display);font-size:30px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px;color:var(--text-primary)}
+.section p{font-size:16px;color:var(--text-secondary);margin-bottom:20px;line-height:1.7}
+.card{background:var(--surface-default);border:1px solid var(--border-default);padding:28px;margin:24px 0}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}
+.grid-3{display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin:24px 0}
+.mono-box{font-family:var(--font-mono);font-size:12px;background:var(--surface-subtle);border:1px solid var(--border-subtle);padding:20px;line-height:1.8;color:var(--text-primary)}
+.tag{display:inline-block;padding:4px 12px;font-family:var(--font-mono);font-size:11px;font-weight:700;background:var(--brand-500);color:var(--pure-white);border-radius:9999px;margin-bottom:12px}
+
+/* Metrics Stat Bar */
+.metrics-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px;background:var(--surface-subtle);border:1px solid var(--border-default);margin:32px 0}
+.metric-num{font-family:var(--font-display);font-size:38px;font-weight:700;color:var(--brand-500);line-height:1}
+.metric-lbl{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-top:6px}
+
+/* Visual Lightness Graph SVG */
+.graph-card{background:var(--surface-default);border:1px solid var(--border-default);padding:24px;margin:24px 0}
+.graph-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="DesignSystem.html">← Back to Studio Workbench</a>
+  <div style="display:flex;gap:16px">
+    <a href="Brand Guidelines.html" style="color:var(--brand-500)">Brand Manual (PDF) →</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="kicker">Architectural Case Study · Design Engineering</div>
+  <h1 class="title">Engineering a Zero-Build, Perceptual Design Token Engine</h1>
+  <p class="subtitle">An in-depth technical case study on building Design System Studio: balancing editorial aesthetics with strict OKLCH token math, multi-theme accessibility, and native browser ES module execution.</p>
+
+  <!-- Impact Metrics Bar -->
+  <div class="metrics-bar">
+    <div><div class="metric-num">0ms</div><div class="metric-lbl">Build Step overhead</div></div>
+    <div><div class="metric-num">100%</div><div class="metric-lbl">WCAG AAA compliant</div></div>
+    <div><div class="metric-num">10-Step</div><div class="metric-lbl">OKLCH Perceptual Scale</div></div>
+    <div><div class="metric-num">6 Formats</div><div class="metric-lbl">Multi-Tool Token Export</div></div>
+  </div>
+
+  <!-- Section 1: Visual Aesthetic -->
+  <div class="section">
+    <div class="tag">Pillar 01 · Visual Aesthetic</div>
+    <h2>Editorial Precision & The Sharp Radius Rationale</h2>
+    <p>Modern design systems frequently default to high border-radii (`8px` to `16px`), creating generic "card-heavy" interfaces. Design System Studio deliberately takes an editorial stance by enforcing <code>var(--radius-sharp: 0px)</code> as the foundational component default.</p>
+
+    <!-- Radius Comparison Visual -->
+    <div class="graph-card">
+      <div class="graph-header">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--brand-600)">VISUAL RADIUS ARCHETYPE COMPARISON</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">Component Surface Tokens</span>
+      </div>
+      <div class="grid-3">
+        <div style="padding:20px;background:var(--surface-canvas);border:2px solid var(--brand-500);border-radius:0px">
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;margin-bottom:4px">Editorial (0px)</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Default in-product structure. Crisp hairline alignment.</div>
+        </div>
+        <div style="padding:20px;background:var(--surface-canvas);border:1px solid var(--border-default);border-radius:8px">
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;margin-bottom:4px">Soft Web (8px)</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Web surface overrides for subtle friendly feel.</div>
+        </div>
+        <div style="padding:20px;background:var(--surface-canvas);border:1px solid var(--border-default);border-radius:16px">
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;margin-bottom:4px">Pill / Modal (16px)</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Dialogs, popovers, and status badge capsules.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: OKLCH Math vs HSL -->
+  <div class="section">
+    <div class="tag">Pillar 02 · Perceptual Color Engine</div>
+    <h2>OKLCH Perceptual Lightness vs. HSL Interpolation</h2>
+    <p>Standard HSL color scales suffer from non-uniform human perceptual lightness (e.g. pure yellow feels brighter than pure blue at 50% lightness). Design System Studio generates scales in the <strong>OKLCH perceptual color space</strong>, ensuring smooth lightness curves across all 10 steps (`50` through `950`).</p>
+
+    <!-- High-End Dashboard Lightness Chart -->
+    <div class="graph-card" style="padding:28px">
+      <div class="graph-header" style="align-items:center">
+        <div>
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--brand-600);letter-spacing:0.08em;display:block">LIGHTNESS STEP UNIFORMITY</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">Perceptual Human Lightness Curve vs Standard RGB/HSL</span>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--text-primary)">
+            <span style="width:12px;height:3px;background:var(--brand-500);border-radius:2px"></span> OKLCH Perceptual
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">
+            <span style="width:12px;height:0;border-bottom:2px dashed #ef4444"></span> Standard HSL
+          </div>
+        </div>
+      </div>
+      
+      <svg viewBox="0 0 800 240" style="width:100%;height:auto;background:var(--surface-subtle);border:1px solid var(--border-subtle);padding:12px;box-sizing:border-box">
+        <defs>
+          <linearGradient id="oklchGlow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--brand-500)" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="var(--brand-500)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Y-Axis Grid Lines & Values -->
+        <line x1="60" y1="30" x2="760" y2="30" stroke="var(--border-subtle)" stroke-dasharray="4"/>
+        <text x="20" y="34" font-family="var(--font-mono)" font-size="10" fill="var(--text-muted)">100%</text>
+
+        <line x1="60" y1="105" x2="760" y2="105" stroke="var(--border-subtle)" stroke-dasharray="4"/>
+        <text x="20" y="109" font-family="var(--font-mono)" font-size="10" fill="var(--text-muted)">50%</text>
+
+        <line x1="60" y1="180" x2="760" y2="180" stroke="var(--border-subtle)"/>
+        <text x="20" y="184" font-family="var(--font-mono)" font-size="10" fill="var(--text-muted)">0%</text>
+
+        <!-- X-Axis Step Markers -->
+        <g font-family="var(--font-mono)" font-size="9" fill="var(--text-muted)" text-anchor="middle">
+          <text x="70" y="202">50</text>
+          <text x="146" y="202">100</text>
+          <text x="222" y="202">200</text>
+          <text x="298" y="202">300</text>
+          <text x="374" y="202">400</text>
+          <text x="450" y="202">500</text>
+          <text x="526" y="202">600</text>
+          <text x="602" y="202">700</text>
+          <text x="678" y="202">800</text>
+          <text x="750" y="202">950</text>
+        </g>
+
+        <!-- Gradient Fill under OKLCH -->
+        <polygon points="70,35 146,51 222,67 298,83 374,99 450,115 526,131 602,147 678,163 750,175 750,180 70,180" fill="url(#oklchGlow)"/>
+
+        <!-- Standard HSL Non-Uniform Curve (Red Dashed) -->
+        <path d="M 70 35 C 220 150 350 20 750 175" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,4"/>
+
+        <!-- OKLCH Uniform Linear Path (Brand Solid) -->
+        <path d="M 70 35 L 146 51 L 222 67 L 298 83 L 374 99 L 450 115 L 526 131 L 602 147 L 678 163 L 750 175" fill="none" stroke="var(--brand-500)" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Data Node Markers on OKLCH Curve -->
+        <circle cx="450" cy="115" r="5" fill="var(--surface-canvas)" stroke="var(--brand-500)" stroke-width="3"/>
+
+        <!-- Inline Floating Badges -->
+        <g font-family="var(--font-sans)">
+          <rect x="465" y="102" width="165" height="24" rx="4" fill="var(--surface-default)" stroke="var(--border-default)"/>
+          <text x="473" y="118" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="var(--brand-600)">OKLCH · 48% Lightness</text>
+
+          <rect x="250" y="112" width="175" height="24" rx="4" fill="var(--surface-default)" stroke="#fca5a5"/>
+          <text x="258" y="128" font-family="var(--font-mono)" font-size="10" font-weight="600" fill="#dc2626">HSL Distortion (Perceptual Drop)</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Section 3: 3-Layer Token Cascade -->
+  <div class="section">
+    <div class="tag">Pillar 03 · Token Cascade</div>
+    <h2>The 3-Layer Token Cascade Architecture</h2>
+    <p>Tokens are organized into three strict abstraction layers to decouple raw hex values from component implementations:</p>
+    <div class="mono-box">
+      <strong>Layer 1: Primitives (Raw Specs)</strong><br>
+      <code>--brand-500: #10b981;</code> &nbsp;·&nbsp; <code>--neutral-900: #171717;</code><br><br>
+      <strong>Layer 2: Semantic Aliases (Intent Rules)</strong><br>
+      <code>--action-primary: var(--neutral-900);</code> &nbsp;·&nbsp; <code>--surface-default: var(--neutral-0);</code><br><br>
+      <strong>Layer 3: Component Implementation</strong><br>
+      <code>&lt;Button variant="primary"&gt;</code> &rarr; consumes <code>var(--action-primary)</code>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
