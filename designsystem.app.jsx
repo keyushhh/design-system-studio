@@ -243,8 +243,6 @@ const NAV = [
   ['Buttons','buttons'],['Inputs & Selection','forms'],['Badges & Tags','badges'],['Cards','cards'],['Tabs','tabs'],['Feedback','feedback'],['Presentation','presentation'],
   ['New Components', null],
   ['Avatar','avatar'],['Progress & Skeleton','progress'],['Modal / Dialog','modal'],['Accordion','accordion'],['Table','table'],['Breadcrumb & Divider','misc'],
-  ['Patterns', null],
-  ['Slide Templates','generator'],
   ['System', null],
   ['State Matrix','statematrix'],['WCAG Contrast','wcag'],['Changelog','changelog'],
 ];
@@ -1363,7 +1361,15 @@ function PresentationSection({ dark = false, push }) {
       React.createElement(HudBar, { label: 'Performance Metric', num: '06', dark: dark }),
       React.createElement('div', { style: { padding: '260px 140px 0' } }, React.createElement(Eyebrow, null, 'Data Monument'),
         React.createElement('div', { style: { marginTop: 40 } }, React.createElement(MetricValue, { value: '2.0', unit: 'M', heading: 'Total design tokens powering every component.' })))),
-    React.createElement(CodeSnippet, { code: SNIPPETS.presentation, push }));
+    React.createElement(CodeSnippet, { code: SNIPPETS.presentation, push }),
+    React.createElement('div', { style: { marginTop: 96 } },
+      React.createElement(Section, { id: 'generator', kicker: 'Patterns', title: 'Master Presentation Generator', intro: 'Generate brand-aligned executive slide decks directly from your active token architecture and component guidelines.' },
+        React.createElement(PatternCard, { href: 'generator/', target: '_blank', rel: 'noopener', tag: 'App', title: 'Master Presentation Generator', desc: 'The live, actively-developed generator - opens in a new tab.' }),
+        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 16, marginTop: 16 } },
+          React.createElement(FileDownload, { href: 'templates/master-presentation/MasterPresentation.pptx', label: 'Download .pptx', hint: 'Download the 14-template Master Presentation as an editable, font-embedded PowerPoint file - opens in PowerPoint, Google Slides, and Canva.' }),
+          React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Editable starting point - fonts embedded, real text boxes, ready for PowerPoint / Google Slides / Canva')))
+    )
+  );
 }
 
 /* ---- WCAG Contrast Checker Section ---- */
@@ -2322,7 +2328,7 @@ function App() {
       React.createElement('nav', { style: { flex: 1, overflowY: 'auto', padding: '12px 12px' } },
         visibleNav.map((n, i) => n[1] === null
           ? React.createElement('div', { key: i, style: { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.16em', color: 'var(--text-faint)', padding: '18px 12px 8px' } }, n[0])
-          : React.createElement('a', { key: i, href: '#' + n[1], onClick: (e) => { e.preventDefault(); setMobileMenuOpen(false); goto(n[1]); },
+          : React.createElement('a', { key: i, href: n[1].includes('.html') || n[1].startsWith('http') ? n[1] : '#' + n[1], target: n[1].includes('.html') || n[1].startsWith('http') ? '_blank' : '_self', rel: 'noopener', onClick: (e) => { setMobileMenuOpen(false); if (!n[1].includes('.html') && !n[1].startsWith('http')) { e.preventDefault(); goto(n[1]); } },
               style: { display: 'block', padding: '8px 12px', fontFamily: 'var(--font-sans)', fontSize: 13.5, textDecoration: 'none', fontWeight: active === n[1] ? 600 : 500, color: active === n[1] ? 'var(--state-selected-fg)' : 'var(--text-secondary)', background: active === n[1] ? 'var(--state-selected)' : 'transparent', borderLeft: `2px solid ${active === n[1] ? 'var(--brand-500)' : 'transparent'}` } }, n[0]))),
       React.createElement('div', { style: { padding: 16, borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 8 } },
         React.createElement(ThemeSwitcher, { currentTheme: theme, onThemeChange: handleThemeChange }),
@@ -2388,11 +2394,6 @@ function App() {
         React.createElement(AccordionSection, null),
         React.createElement(TableSection, null),
         React.createElement(MiscSection, null),
-        React.createElement(Section, { id: 'generator', kicker: 'Patterns', title: 'Master Presentation Generator', intro: 'Generate brand-aligned executive slide decks directly from your active token architecture and component guidelines.' },
-          React.createElement(PatternCard, { href: 'https://design-system-studio-ppt.vercel.app', target: '_blank', rel: 'noopener', tag: 'App', title: 'Master Presentation Generator', desc: 'The live, actively-developed generator - opens in a new tab.' }),
-          React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 16, marginTop: 16 } },
-            React.createElement(FileDownload, { href: 'templates/master-presentation/MasterPresentation.pptx', label: 'Download .pptx', hint: 'Download the 14-template Master Presentation as an editable, font-embedded PowerPoint file - opens in PowerPoint, Google Slides, and Canva.' }),
-            React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Editable starting point - fonts embedded, real text boxes, ready for PowerPoint / Google Slides / Canva'))),
         React.createElement(StateMatrixSection, null),
         React.createElement(WCAGSection, null),
         React.createElement(ChangelogSection, null)

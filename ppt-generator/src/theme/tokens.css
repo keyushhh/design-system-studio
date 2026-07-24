@@ -1,0 +1,346 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Satoshi", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-primary: #1A1A1B;
+  --color-brand-accent: #6B6B6B;
+  --color-brand-emerald: #10b981;
+
+  /* Fixed colors for surfaces that intentionally remain dark in every theme. */
+  --color-fixed-white: #ffffff;
+  --color-fixed-light: #c7c7d1;
+  --color-fixed-muted: #9696a3;
+  --color-fixed-dark: #141418;
+
+  /* Dynamically map core Tailwind colors to CSS properties for instant Dark Mode */
+  --color-white: var(--bg-white);
+  --color-card-accent: var(--bg-card-accent);
+  
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-150: var(--neutral-200);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
+  --color-neutral-850: var(--neutral-800);
+  --color-neutral-900: var(--neutral-900);
+  --color-neutral-950: var(--neutral-950);
+
+  --color-slate-50: var(--neutral-50);
+  --color-slate-100: var(--neutral-100);
+  --color-slate-200: var(--neutral-200);
+  --color-slate-300: var(--neutral-300);
+  --color-slate-400: var(--neutral-400);
+  --color-slate-500: var(--neutral-500);
+  --color-slate-600: var(--neutral-600);
+  --color-slate-700: var(--neutral-700);
+  --color-slate-800: var(--neutral-800);
+  --color-slate-900: var(--neutral-900);
+  --color-slate-950: var(--neutral-950);
+
+  /* Map Emerald (brand primary) scale to dynamic CSS properties */
+  --color-emerald-50: var(--emerald-50);
+  --color-emerald-100: var(--emerald-100);
+  --color-emerald-200: var(--emerald-200);
+  --color-emerald-300: var(--emerald-300);
+  --color-emerald-400: var(--emerald-400);
+  --color-emerald-500: var(--emerald-500);
+  --color-emerald-600: var(--emerald-600);
+  --color-emerald-650: var(--emerald-650);
+  --color-emerald-700: var(--emerald-700);
+  --color-emerald-800: var(--emerald-800);
+  --color-emerald-900: var(--emerald-900);
+  --color-emerald-950: var(--emerald-950);
+
+  /* Map Secondary scale to dynamic CSS properties */
+  --color-secondary-50: var(--secondary-50);
+  --color-secondary-100: var(--secondary-100);
+  --color-secondary-200: var(--secondary-200);
+  --color-secondary-300: var(--secondary-300);
+  --color-secondary-400: var(--secondary-400);
+  --color-secondary-500: var(--secondary-500);
+  --color-secondary-600: var(--secondary-600);
+  --color-secondary-650: var(--secondary-650);
+  --color-secondary-700: var(--secondary-700);
+  --color-secondary-800: var(--secondary-800);
+  --color-secondary-900: var(--secondary-900);
+  --color-secondary-950: var(--secondary-950);
+
+  /* Map Accent scale to dynamic CSS properties */
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-300: var(--accent-300);
+  --color-accent-400: var(--accent-400);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-650: var(--accent-650);
+  --color-accent-700: var(--accent-700);
+  --color-accent-800: var(--accent-800);
+  --color-accent-900: var(--accent-900);
+  --color-accent-950: var(--accent-950);
+}
+
+:root {
+  /* Design-system foundations: stable primitives for components and Figma exports. */
+  --space-0: 0px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --radius-sharp: 0px;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.1);
+
+  /* Default Theme Base - Light Mode */
+  --bg-white: #ffffff;
+  --bg-card-accent: #FAF9F6;
+
+  --neutral-50: #FBFBFB;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0a0a0a;
+
+  /* Integrations sandbox grid line color */
+  --grid-line-color: rgba(226, 232, 240, 0.4);
+
+  /* Brand primary scale (emerald green) */
+  --emerald-50: #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-200: #a7f3d0;
+  --emerald-300: #6ee7b7;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-650: #047857;
+  --emerald-700: #047857;
+  --emerald-800: #065f46;
+  --emerald-900: #064e3b;
+  --emerald-950: #07070a;
+
+  /* Default Secondary Presets */
+  --secondary-50: #f5f3ff;
+  --secondary-100: #e0e7ff;
+  --secondary-200: #c7d2fe;
+  --secondary-300: #a5b4fc;
+  --secondary-400: #818cf8;
+  --secondary-500: #6366f1;
+  --secondary-600: #4f46e5;
+  --secondary-650: #4338ca;
+  --secondary-700: #4338ca;
+  --secondary-800: #3730a3;
+  --secondary-900: #1e1b4b;
+  --secondary-950: #07070a;
+
+  /* Default Accent Presets */
+  --accent-50: #f5f3ff;
+  --accent-100: #e0e7ff;
+  --accent-200: #c7d2fe;
+  --accent-300: #a5b4fc;
+  --accent-400: #818cf8;
+  --accent-500: #6366f1;
+  --accent-600: #4f46e5;
+  --accent-650: #4338ca;
+  --accent-700: #4338ca;
+  --accent-800: #3730a3;
+  --accent-900: #1e1b4b;
+  --accent-950: #07070a;
+
+  /* Semantic aliases. Components can target meaning instead of a palette step. */
+  --surface-canvas: var(--neutral-50);
+  --surface-default: var(--bg-white);
+  --surface-subtle: var(--bg-card-accent);
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-500);
+  --text-inverse: #ffffff;
+  --border-default: var(--neutral-200);
+  --border-subtle: var(--neutral-100);
+  --border-strong: var(--neutral-300);
+  --action-primary: var(--emerald-600);
+  --action-primary-hover: var(--emerald-700);
+  --action-primary-subtle: var(--emerald-50);
+  --focus-ring: var(--emerald-500);
+}
+
+@layer base {
+  body {
+    background-color: var(--neutral-50);
+    color: var(--neutral-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--neutral-100);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--neutral-300);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--neutral-400);
+  }
+}
+
+/* Custom Dotted Background Grid - Light & Dark adaptation */
+.bg-grid-dots {
+  background-size: 24px 24px !important;
+  background-image: radial-gradient(circle, var(--neutral-200) 1px, transparent 1px) !important;
+}
+
+.bg-grid-dots-dark {
+  background-size: 24px 24px !important;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px) !important;
+}
+
+.bg-grid-dots-accent {
+  background-size: 20px 20px !important;
+  background-image: radial-gradient(circle, var(--neutral-300) 1.2px, transparent 1.2px) !important;
+}
+
+/* India map pulse ring animation */
+@keyframes ping {
+  0% { transform: scale(1); opacity: 0.5; }
+  70%, 100% { transform: scale(2); opacity: 0; }
+}
+
+svg { overflow: visible; }
+
+/* Sharp/Squared corners styling toggle */
+:root.corners-sharp,
+.corners-sharp,
+.corners-sharp * {
+  border-radius: 0px !important;
+}
+
+/* Exclude map ripples, tiny status indicators, and color preset circles from being squared */
+.corners-sharp .custom-ripple,
+.corners-sharp .reach-ripple,
+.corners-sharp [class*="ripple"],
+.corners-sharp .w-1.h-1,
+.corners-sharp .w-2.h-2,
+.corners-sharp .w-3.h-3,
+.corners-sharp .h-1.w-1,
+.corners-sharp .h-2.w-2,
+.corners-sharp .h-3.w-3,
+.corners-sharp .w-7.h-7,
+.corners-sharp .w-8.h-8,
+.corners-sharp .h-7.w-7,
+.corners-sharp .h-8.w-8 {
+  border-radius: 50% !important;
+}
+
+.corners-sharp ::-webkit-scrollbar-thumb {
+  border-radius: 0px !important;
+}
+
+/* Hide all page and section description pills/badges and tracking-widest uppercase sub-labels */
+span[class*="tracking-widest"][class*="uppercase"],
+span[class*="tracking-widest"][class*="font-mono"],
+span[class*="font-mono"][class*="uppercase"][class*="px-"],
+span.font-mono.uppercase[class*="bg-"] {
+  display: none !important;
+}
+
+/* Standard height utility to keep inputs, buttons, and selects in perfect visual sync */
+.modal-control-height {
+  height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+/* Ambient background blur orbs compositor-friendly animations */
+.animate-orb-top-left {
+  animation: orb-drift-top-left 18s ease-in-out infinite;
+}
+.animate-orb-top-right {
+  animation: orb-drift-top-right 22s ease-in-out infinite;
+}
+.animate-orb-center {
+  animation: orb-pulse-center 28s ease-in-out infinite;
+}
+.animate-orb-mid-left {
+  animation: orb-pulse-mid-left 24s ease-in-out infinite;
+}
+.animate-orb-lower {
+  animation: orb-pulse-lower 20s ease-in-out infinite;
+}
+.animate-orb-bottom {
+  animation: orb-pulse-bottom 26s ease-in-out infinite;
+}
+
+@keyframes orb-drift-top-left {
+  0%, 100% { translate: 0 0; scale: 1; }
+  33% { translate: 60px -40px; scale: 1.2; }
+  66% { translate: -40px 40px; scale: 0.9; }
+}
+
+@keyframes orb-drift-top-right {
+  0%, 100% { translate: 0 0; scale: 1; }
+  33% { translate: -60px 50px; scale: 0.95; }
+  66% { translate: 40px -30px; scale: 1.15; }
+}
+
+@keyframes orb-pulse-center {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.18; }
+  75% { scale: 0.88; }
+}
+
+@keyframes orb-pulse-mid-left {
+  0%, 100% { scale: 1; }
+  50% { scale: 0.9; }
+  75% { scale: 1.1; }
+}
+
+@keyframes orb-pulse-lower {
+  0%, 100% { scale: 1; }
+  50% { scale: 0.98; }
+  75% { scale: 1.12; }
+}
+
+@keyframes orb-pulse-bottom {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.15; }
+  75% { scale: 0.95; }
+}
+
+
