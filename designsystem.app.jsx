@@ -938,9 +938,15 @@ function FontDownload({ href, name }) {
     React.createElement('span', { style: { fontSize: 14, lineHeight: 1, color: h ? 'var(--pure-white)' : 'var(--text-brand)' } }, '↓'));
 }
 
-function FileDownload({ href, label, hint, target, rel, download = true }) {
+function FileDownload({ href, label, hint, target, rel, download = true, onClick }) {
   const [h, setH] = React.useState(false);
-  return React.createElement('a', { href, download, target, rel, onMouseEnter: () => setH(true), onMouseLeave: () => setH(false), title: hint, style: { display: 'inline-flex', alignItems: 'center', gap: 9, textDecoration: 'none', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: h ? 'var(--pure-white)' : 'var(--text-primary)', background: h ? 'var(--brand-600)' : 'transparent', border: '1px solid ' + (h ? 'var(--brand-600)' : 'var(--border-strong)'), padding: '9px 16px', transition: 'background .15s ease, color .15s ease, border-color .15s ease', cursor: 'pointer' } },
+  const handleClick = (e) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(e);
+    }
+  };
+  return React.createElement('a', { href, download, target, rel, onClick: handleClick, onMouseEnter: () => setH(true), onMouseLeave: () => setH(false), title: hint, style: { display: 'inline-flex', alignItems: 'center', gap: 9, textDecoration: 'none', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: h ? 'var(--pure-white)' : 'var(--text-primary)', background: h ? 'var(--brand-600)' : 'transparent', border: '1px solid ' + (h ? 'var(--brand-600)' : 'var(--border-strong)'), padding: '9px 16px', transition: 'background .15s ease, color .15s ease, border-color .15s ease', cursor: 'pointer' } },
     label,
     React.createElement('span', { style: { fontSize: 14, lineHeight: 1, color: h ? 'var(--pure-white)' : 'var(--text-brand)' } }, '↓'));
 }
@@ -1366,7 +1372,33 @@ function PresentationSection({ dark = false, push }) {
       React.createElement(Section, { id: 'generator', kicker: 'Patterns', title: 'Master Presentation Generator', intro: 'Generate brand-aligned executive slide decks directly from your active token architecture and component guidelines.' },
         React.createElement(PatternCard, { href: 'generator/', target: '_blank', rel: 'noopener', tag: 'App', title: 'Master Presentation Generator', desc: 'The live, actively-developed generator - opens in a new tab.' }),
         React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 16, marginTop: 16 } },
-          React.createElement(FileDownload, { href: 'templates/master-presentation/MasterPresentation.pptx', label: 'Download .pptx', hint: 'Download the 14-template Master Presentation as an editable, font-embedded PowerPoint file - opens in PowerPoint, Google Slides, and Canva.' }),
+          React.createElement(FileDownload, { 
+            href: '#', 
+            onClick: () => {
+              // Create an invisible iframe to the PPT Generator in blank export mode.
+              // It will pick up the live CSS variables and fonts natively.
+              const iframe = document.createElement('iframe');
+              iframe.style.display = 'none';
+              iframe.src = 'generator/index.html?export=blank';
+              document.body.appendChild(iframe);
+              
+              const handleMessage = (e) => {
+                if (e.data === 'EXPORT_DONE') {
+                  document.body.removeChild(iframe);
+                  window.removeEventListener('message', handleMessage);
+                }
+              };
+              window.addEventListener('message', handleMessage);
+              
+              // Fallback cleanup if the message fails
+              setTimeout(() => { 
+                if (document.body.contains(iframe)) document.body.removeChild(iframe); 
+                window.removeEventListener('message', handleMessage);
+              }, 15000);
+            },
+            label: 'Download .pptx', 
+            hint: 'Download the 14-template Master Presentation as an editable, font-embedded PowerPoint file - opens in PowerPoint, Google Slides, and Canva.' 
+          }),
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Editable starting point - fonts embedded, real text boxes, ready for PowerPoint / Google Slides / Canva')))
     )
   );

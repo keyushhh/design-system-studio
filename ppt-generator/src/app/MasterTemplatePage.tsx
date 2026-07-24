@@ -83,6 +83,23 @@ function historyReducer(state: DeckHistory, action: HistoryAction): DeckHistory 
 export function MasterTemplatePage() {
   const { showToast } = useToast();
 
+  const [isExportingBlank] = useState(
+    () => new URLSearchParams(window.location.search).get('export') === 'blank'
+  );
+
+  useEffect(() => {
+    if (isExportingBlank) {
+      const runExport = async () => {
+        const { createTemplateDeck } = await import('../features/deck/deckBuilder');
+        const blankDeck = createTemplateDeck();
+        const { exportToPPTX } = await import('../features/generator/exportHelper');
+        await exportToPPTX(blankDeck.slides, 'MasterPresentation', blankDeck.logoUrl, () => {}, blankDeck.themeMode);
+        window.parent.postMessage('EXPORT_DONE', '*');
+      };
+      runExport();
+    }
+  }, [isExportingBlank]);
+
   // Bootstrap the active deck once (migrates any legacy session into a project).
   const bootstrapRef = useRef<{ id: string; session: StoredSession } | null>(null);
   if (bootstrapRef.current === null) bootstrapRef.current = ensureInitialized(createTemplateDeck);
@@ -107,6 +124,10 @@ export function MasterTemplatePage() {
 
   const editing = draft !== null;
   const displayDeck = draft ?? deck;
+
+  if (isExportingBlank) {
+    return null;
+  }
 
   // Review & Present overlays.
   const [reviewOpen, setReviewOpen] = useState(false);
