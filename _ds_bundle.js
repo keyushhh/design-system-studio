@@ -1373,7 +1373,7 @@ function Eyebrow({
   children,
   center = false,
   size = 14,
-  color = 'var(--brand-600)',
+  color = 'var(--text-brand)',
   style,
   ...rest
 }) {
@@ -1474,7 +1474,7 @@ function MetricValue({
       letterSpacing: '-0.07em',
       display: 'flex',
       alignItems: 'baseline',
-      color: 'var(--neutral-900)'
+      color: 'inherit'
     }
   }, value, unit && /*#__PURE__*/React.createElement("span", {
     style: {
@@ -1490,7 +1490,7 @@ function MetricValue({
       lineHeight: 0.85,
       letterSpacing: '-0.05em',
       marginTop: 24,
-      color: 'var(--neutral-900)'
+      color: 'inherit'
     }
   }, heading));
 }
@@ -1538,7 +1538,7 @@ function SlideFrame({
       width: 1920,
       height: 1080,
       background: dark ? 'var(--presentation-dark)' : 'var(--presentation-light)',
-      color: dark ? '#ffffff' : 'var(--neutral-900)',
+      color: dark ? '#ffffff' : 'var(--text-primary)',
       overflow: 'hidden',
       isolation: 'isolate',
       boxShadow: 'var(--shadow-soft)',

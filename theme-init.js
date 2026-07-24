@@ -20,9 +20,23 @@
   }
   function apply(theme) {
     var root = document.documentElement;
-    if (theme === 'dark') root.setAttribute('data-theme', 'dark');
-    else if (theme === 'hc') root.setAttribute('data-theme', 'hc');
-    else root.removeAttribute('data-theme');
+    if (theme === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      root.style.removeProperty('--action-primary');
+      root.style.removeProperty('--action-primary-hover');
+      root.style.removeProperty('--action-primary-active');
+      root.style.removeProperty('--neutral-900');
+      root.style.removeProperty('--surface-canvas');
+    } else if (theme === 'hc') {
+      root.setAttribute('data-theme', 'hc');
+      root.style.removeProperty('--action-primary');
+      root.style.removeProperty('--action-primary-hover');
+      root.style.removeProperty('--action-primary-active');
+      root.style.removeProperty('--neutral-900');
+      root.style.removeProperty('--surface-canvas');
+    } else {
+      root.removeAttribute('data-theme');
+    }
   }
 
   function applyDynamicTokens() {
@@ -52,22 +66,25 @@
       }
 
       function hslToHex(h, s, l) {
-        l /= 100;
-        const a = s * Math.min(l, 1 - l) / 100;
-        const f = n => {
-          const k = (n + h / 30) % 12;
-          const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-          return Math.round(255 * color).toString(16).padStart(2, '0');
-        };
-        return `#${f(0)}${f(8)}${f(4)}`;
+        s /= 100; l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+        return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
       }
 
-      function generateScale(baseHex, type) {
-        const [h, s] = hexToHsl(baseHex);
-        const lightnessMap = { 50: 97, 100: 93, 200: 84, 300: 72, 400: 60, 500: 48, 600: 38, 700: 28, 800: 20, 900: 14, 950: 8 };
+      function generateScale(hexColor, type) {
+        const [h, s, l] = hexToHsl(hexColor);
+        const lightnessMap = type === 'brand' ? {
+          50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
+        } : {
+          50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
+        };
         Object.keys(lightnessMap).forEach(step => {
           document.documentElement.style.setProperty(`--${type}-${step}`, hslToHex(h, s, lightnessMap[step]));
         });
+        document.documentElement.style.setProperty(`--${type}-500`, hexColor);
       }
 
       if (savedBrand) generateScale(savedBrand, 'brand');
@@ -116,7 +133,9 @@
     set: function (theme) {
       write(theme);
       apply(theme);
+      applyDynamicTokens();
       return theme;
     },
+    restoreDynamicTokens: applyDynamicTokens,
   };
 })();

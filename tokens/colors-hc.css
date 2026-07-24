@@ -22,28 +22,30 @@
   --text-muted:     #d4d4d4;
   --text-faint:     #a3a3a3;
   --text-inverse:   #000000;
-  --text-brand:     #6ee7b7;
+  --text-brand:     var(--brand-300);
   --text-on-brand:  #000000;
-  --text-link:      #6ee7b7;
-  --text-link-hover:#a7f3d0;
+  --text-link:      var(--brand-300);
+  --text-link-hover:var(--brand-200);
+  --brand-600:      var(--brand-300);
+  --brand-700:      var(--brand-300);
 
   --border-subtle:  #404040;
   --border-default: #737373;
   --border-strong:  #ffffff;
-  --border-brand:   #6ee7b7;
+  --border-brand:   var(--brand-300);
   --border-inverse: rgba(0,0,0,0.4);
 
   --action-primary:        #ffffff;
   --action-primary-hover:  #e5e5e5;
   --action-primary-active: #d4d4d4;
-  --action-brand:          #6ee7b7;
-  --action-brand-hover:    #a7f3d0;
+  --action-brand:          var(--brand-300);
+  --action-brand-hover:    var(--brand-200);
   --action-brand-subtle:   #141414;
 
-  --focus-ring:         #6ee7b7;
+  --focus-ring:         var(--brand-300);
   --state-hover:        #1a1a1a;
-  --state-selected:     #0f2920;
-  --state-selected-fg:  #6ee7b7;
+  --state-selected:     color-mix(in srgb, var(--brand-500) 25%, transparent);
+  --state-selected-fg:  var(--brand-300);
   --state-disabled-bg:  #1a1a1a;
   --state-disabled-fg:  #737373;
 

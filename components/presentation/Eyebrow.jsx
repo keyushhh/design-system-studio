@@ -5,7 +5,7 @@ import React from 'react';
  * slide and section. Mono, uppercase, emerald, wide tracking.
  */
 
-export function Eyebrow({ children, center = false, size = 14, color = 'var(--brand-600)', style, ...rest }) {
+export function Eyebrow({ children, center = false, size = 14, color = 'var(--text-brand)', style, ...rest }) {
   return (
     <div
       style={{

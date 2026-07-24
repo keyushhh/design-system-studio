@@ -16,7 +16,7 @@ export function MetricValue({ value, unit, heading, valueSize = 420, headingSize
         letterSpacing: '-0.07em',
         display: 'flex',
         alignItems: 'baseline',
-        color: 'var(--neutral-900)',
+        color: 'inherit',
       }}>
         {value}
         {unit && <span style={{ color: 'var(--brand-500)', fontSize: '0.3em', marginLeft: 10 }}>{unit}</span>}
@@ -29,7 +29,7 @@ export function MetricValue({ value, unit, heading, valueSize = 420, headingSize
           lineHeight: 0.85,
           letterSpacing: '-0.05em',
           marginTop: 24,
-          color: 'var(--neutral-900)',
+          color: 'inherit',
         }}>
           {heading}
         </h3>

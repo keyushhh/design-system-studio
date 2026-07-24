@@ -660,14 +660,17 @@ function LiveTokenCustomizer({ push }) {
     else if (type === 'accent') applyAccentColor(value);
     else if (type === 'neutral') {
       setNeutral900(value);
-      document.documentElement.style.setProperty('--neutral-900', value);
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      if (!isDark) {
+      const isLight = !document.documentElement.getAttribute('data-theme');
+      if (isLight) {
+        document.documentElement.style.setProperty('--neutral-900', value);
         document.documentElement.style.setProperty('--action-primary', value);
       }
     } else if (type === 'canvas') {
       setSurfaceCanvas(value);
-      document.documentElement.style.setProperty('--surface-canvas', value);
+      const isLight = !document.documentElement.getAttribute('data-theme');
+      if (isLight) {
+        document.documentElement.style.setProperty('--surface-canvas', value);
+      }
     }
   };
 
@@ -677,10 +680,13 @@ function LiveTokenCustomizer({ push }) {
     applyBrandColor(preset.brand);
     applyAccentColor(preset.accent);
     setNeutral900(preset.dark);
-    document.documentElement.style.setProperty('--neutral-900', preset.dark);
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (!isDark) {
+    const isLight = !document.documentElement.getAttribute('data-theme');
+    if (isLight) {
+      document.documentElement.style.setProperty('--neutral-900', preset.dark);
       document.documentElement.style.setProperty('--action-primary', preset.dark);
+    } else {
+      document.documentElement.style.removeProperty('--neutral-900');
+      document.documentElement.style.removeProperty('--action-primary');
     }
     document.documentElement.style.removeProperty('--surface-canvas');
     if (push) push({ title: 'Preset Applied', message: preset.name + ' full scale active', tone: 'brand' });
@@ -1256,12 +1262,12 @@ function CodeSnippet({ code, push }) {
       onClick: () => setOpen(o => !o),
       style: { display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', background: 'transparent', border: '1px solid var(--border-default)', padding: '7px 14px', cursor: 'pointer' }
     }, React.createElement(Icon, { name: open ? 'chevron-down' : 'chevron-right', size: 12 }), open ? 'Hide code' : 'View code snippet'),
-    open && React.createElement('div', { style: { position: 'relative', marginTop: 8, background: 'var(--neutral-950)', border: '1px solid var(--border-default)' } },
+    open && React.createElement('div', { style: { position: 'relative', marginTop: 8, background: '#0a0a0a', border: '1px solid var(--border-default)' } },
       React.createElement('button', {
         onClick: () => copy(code, push),
         style: { position: 'absolute', top: 10, right: 10, display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', padding: '5px 10px', cursor: 'pointer' }
       }, React.createElement(Icon, { name: 'copy', size: 11 }), 'Copy'),
-      React.createElement('pre', { style: { margin: 0, padding: '20px 20px 20px', fontFamily: 'var(--font-mono)', fontSize: 12, lineHeight: 1.7, color: '#a3e6c8', overflowX: 'auto', whiteSpace: 'pre' } }, code)));
+      React.createElement('pre', { style: { margin: 0, padding: '20px 20px 20px', fontFamily: 'var(--font-mono)', fontSize: 12, lineHeight: 1.7, color: 'var(--brand-300)', overflowX: 'auto', whiteSpace: 'pre' } }, code)));
 }
 
 function ButtonsSection({ push }) {
@@ -1354,7 +1360,7 @@ function PresentationSection({ dark = false, push }) {
       React.createElement(Panel, { style: { position: 'relative' } }, React.createElement(Sub, null, 'HUD bar'), React.createElement('div', { style: { position: 'relative', height: 40 } }, React.createElement(HudBar, { label: 'Strategic Context', num: '05', position: 'static' })))),
     React.createElement(Sub, null, 'Slide frame + metric monument'),
     React.createElement(SlideFrame, { glow: true, dark: dark },
-      React.createElement(HudBar, { label: 'Performance Metric', num: '06' }),
+      React.createElement(HudBar, { label: 'Performance Metric', num: '06', dark: dark }),
       React.createElement('div', { style: { padding: '260px 140px 0' } }, React.createElement(Eyebrow, null, 'Data Monument'),
         React.createElement('div', { style: { marginTop: 40 } }, React.createElement(MetricValue, { value: '2.0', unit: 'M', heading: 'Total design tokens powering every component.' })))),
     React.createElement(CodeSnippet, { code: SNIPPETS.presentation, push }));
@@ -1792,23 +1798,35 @@ function StateMatrixSection() {
   );
 }
 
-/* ========== THEME SWITCHER (self-contained, no toggleTheme dependency) ========== */
-function ThemeSwitcher() {
-  var stored = localStorage.getItem('ds-theme') || 'light';
+/* ========== THEME SWITCHER (self-contained, with state notification) ========== */
+function ThemeSwitcher({ currentTheme, onThemeChange }) {
+  var stored = currentTheme || (window.DesignSystemStudioTheme ? window.DesignSystemStudioTheme.get() : (localStorage.getItem('ds-theme') || 'light'));
   var [activeTheme, setActiveTheme] = useState(stored);
 
+  useEffect(() => {
+    if (currentTheme && currentTheme !== activeTheme) {
+      setActiveTheme(currentTheme);
+    }
+  }, [currentTheme]);
+
   function applyTheme(key) {
-    document.documentElement.removeAttribute('data-theme');
-    if (key !== 'light') document.documentElement.setAttribute('data-theme', key);
-    ['--surface-canvas', '--brand-500', '--neutral-900', '--action-primary'].forEach(p => {
-      document.documentElement.style.removeProperty(p);
-    });
-    ['50','100','200','300','400','500','600','700','800','900','950'].forEach(s => {
-      document.documentElement.style.removeProperty(`--brand-${s}`);
-      document.documentElement.style.removeProperty(`--accent-${s}`);
-    });
+    if (window.DesignSystemStudioTheme) {
+      window.DesignSystemStudioTheme.set(key);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      if (key !== 'light') document.documentElement.setAttribute('data-theme', key);
+    }
+    if (key === 'dark' || key === 'hc') {
+      document.documentElement.style.removeProperty('--action-primary');
+      document.documentElement.style.removeProperty('--action-primary-hover');
+      document.documentElement.style.removeProperty('--action-primary-active');
+      document.documentElement.style.removeProperty('--neutral-900');
+      document.documentElement.style.removeProperty('--surface-canvas');
+    }
     localStorage.setItem('ds-theme', key);
+    localStorage.setItem('design-system-studio-theme', key);
     setActiveTheme(key);
+    if (onThemeChange) onThemeChange(key);
   }
 
   var tabs = [['Light','light'], ['Dark','dark'], ['HC','hc']];
@@ -2198,7 +2216,8 @@ function App() {
 
   // Derive active theme & active token overrides from workspace model
   const activeTheme = workspace.themes.find((t) => t.id === workspace.activeThemeId) || workspace.themes[0];
-  const themeMode = activeTheme.mode || (getThemeHelper() ? getThemeHelper().get() : 'light');
+  const currentMode = (getThemeHelper() && getThemeHelper().get()) || 'light';
+  const theme = currentMode || activeTheme.mode || 'light';
 
   // Sync workspace state to localStorage
   useEffect(() => {
@@ -2209,7 +2228,7 @@ function App() {
 
   // Keep theme manager sync with activeTheme.mode
   const toggleTheme = () => {
-    const nextMode = themeMode === 'dark' ? 'light' : 'dark';
+    const nextMode = theme === 'dark' ? 'light' : 'dark';
     const helper = getThemeHelper();
     const updatedMode = helper ? helper.set(nextMode) : nextMode;
 
@@ -2220,8 +2239,6 @@ function App() {
       )
     }));
   };
-
-  const theme = themeMode;
 
   useEffect(() => {
     const ids = NAV.filter((n) => n[1]).map((n) => n[1]);
@@ -2263,6 +2280,20 @@ function App() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleThemeChange = (newMode) => {
+    const helper = getThemeHelper();
+    if (helper) helper.set(newMode);
+    setWorkspace((prev) => {
+      const activeId = prev.activeThemeId || DEFAULT_THEME_ID;
+      return {
+        ...prev,
+        themes: (prev.themes || []).map((t) =>
+          t.id === activeId ? { ...t, mode: newMode } : t
+        )
+      };
+    });
+  };
+
   return React.createElement('div', { className: 'app-container', style: { display: 'flex', height: '100vh', background: 'transparent' } },
     /* Mobile top header bar */
     React.createElement('div', {
@@ -2294,7 +2325,7 @@ function App() {
           : React.createElement('a', { key: i, href: '#' + n[1], onClick: (e) => { e.preventDefault(); setMobileMenuOpen(false); goto(n[1]); },
               style: { display: 'block', padding: '8px 12px', fontFamily: 'var(--font-sans)', fontSize: 13.5, textDecoration: 'none', fontWeight: active === n[1] ? 600 : 500, color: active === n[1] ? 'var(--state-selected-fg)' : 'var(--text-secondary)', background: active === n[1] ? 'var(--state-selected)' : 'transparent', borderLeft: `2px solid ${active === n[1] ? 'var(--brand-500)' : 'transparent'}` } }, n[0]))),
       React.createElement('div', { style: { padding: 16, borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 8 } },
-        React.createElement(ThemeSwitcher, null),
+        React.createElement(ThemeSwitcher, { currentTheme: theme, onThemeChange: handleThemeChange }),
         /* Export dropdown */
         React.createElement('div', { style: { position: 'relative' } },
           React.createElement(Button, { variant: 'primary', size: 'sm', fullWidth: true, iconLeft: 'download', iconRight: 'chevron-down', onClick: () => setExportOpen(o => !o) }, 'Export Tokens'),
@@ -2349,7 +2380,7 @@ function App() {
         React.createElement(CardsSection, { push }),
         React.createElement(TabsSection, { push }),
         React.createElement(FeedbackSection, { push }),
-        React.createElement(PresentationSection, { dark: theme === 'dark', push }),
+        React.createElement(PresentationSection, { dark: theme === 'dark' || theme === 'hc', push }),
         React.createElement(TokenMapSection, null),
         React.createElement(AvatarSection, { push }),
         React.createElement(ProgressSection, null),

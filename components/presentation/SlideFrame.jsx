@@ -33,7 +33,7 @@ export function SlideFrame({ children, dark = false, showGrid = true, glow = fal
         width: 1920,
         height: 1080,
         background: dark ? 'var(--presentation-dark)' : 'var(--presentation-light)',
-        color: dark ? '#ffffff' : 'var(--neutral-900)',
+        color: dark ? '#ffffff' : 'var(--text-primary)',
         overflow: 'hidden',
         isolation: 'isolate',
         boxShadow: 'var(--shadow-soft)',

@@ -78,12 +78,13 @@
   --state-selected-fg:    var(--brand-300);
 
   /* ---- Ambient background (grid + glow) ----
-     Faint grid line + a soft, low-intensity emerald orb. Kept much
+     Faint grid line + a soft, low-intensity brand orb. Kept much
      gentler than a full slide glow so it reads as a subtle ambient
      wash rather than a harsh spotlight. */
   --grid-line-color: rgba(255, 255, 255, 0.055);
-  --glow-bg: radial-gradient(circle, rgba(16, 185, 129, 0.13) 0%, rgba(16, 185, 129, 0.05) 45%, transparent 70%);
+  --glow-bg: radial-gradient(circle, color-mix(in srgb, var(--brand-500) 14%, transparent) 0%, color-mix(in srgb, var(--brand-500) 5%, transparent) 45%, transparent 70%);
   --glow-filter: blur(45px);
+  --presentation-light: var(--surface-default);
 
   /* ---- Elevation ----
      Shadows read faintly on dark; deepen them and lean on borders. */
