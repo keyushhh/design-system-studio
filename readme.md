@@ -31,6 +31,12 @@
 - **TypeScript Constants**: Type-safe design token constants for TS codebases.
 - **CSS Custom Properties**: Native `--brand-500`, `--neutral-900` variables.
 
+### 6. Master PPT Generator
+- **Real-Time Token Sync**: Instantly reflects all active colors, typography, and themes (Light, Dark, HC) selected in the Design System Studio.
+- **AI-Powered Layouts**: Converts structured document text into beautifully formatted slide templates using an AST (Abstract Syntax Tree) layout parser.
+- **Native Exports**: Generates fully editable `.pptx` PowerPoint files natively in the browser without a server, alongside pixel-perfect PDF and PNG exports.
+- **Dynamic Auto-Fit**: Intelligently calculates bounding boxes and wraps text naturally to prevent overflow and overlapping across varied content lengths.
+
 ---
 
 ## Tech Stack
