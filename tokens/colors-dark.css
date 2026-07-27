@@ -57,8 +57,14 @@
   --text-brand:         var(--brand-400);
   --text-link:          var(--brand-400);
   --text-link-hover:    var(--brand-300);
-  --action-brand:       var(--brand-500);
-  --action-brand-hover: var(--brand-400);
+  /* A solid brand button carries --text-on-brand (white) on top. brand-500 IS
+     the user's seed, so its lightness is whatever they picked - white text on
+     a mid-tone emerald measured 2.54:1, a straight WCAG failure that the
+     contrast auditor surfaced once it started reading live values.
+     brand-600 is the rung the engine tunes to clear AA against white at every
+     hue (worst case 4.78:1), so solid brand surfaces use it in every theme. */
+  --action-brand:       var(--brand-600);
+  --action-brand-hover: var(--brand-700);
   --focus-ring:         var(--brand-400);
 
   /* ============================================================

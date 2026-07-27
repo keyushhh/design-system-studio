@@ -8,3 +8,11 @@
 # Local logs
 *.log
 
+
+# Dependencies (both the root build tooling and the PPT generator)
+node_modules/
+
+# NOTE: designsystem.app.js and generator/ are BUILD OUTPUT but are
+# committed on purpose - the site is served as static files, so the
+# compiled artifacts have to be in the repo. Run `npm run build:all`
+# and commit the result whenever you change a source file.

@@ -54,3 +54,109 @@
 }
 
 
+
+/* ============================================================
+   FOCUS & MOTION - system-wide interaction defaults
+   These live in the global entry sheet rather than in components
+   so a11y behaviour can never be forgotten by an author. Every
+   component inherits them for free; nothing opts in.
+   ============================================================ */
+
+/* ---- Focus ----
+   --focus-ring was defined in all three themes and applied to
+   nothing, so keyboard users got the browser's default blue - a
+   colour from outside the system, invisible against some surfaces,
+   and absent entirely on the search field. That's a poor look for
+   a design system that ships a WCAG auditor.
+
+   :focus-visible (not :focus) so a mouse click doesn't leave a ring
+   behind, while keyboard and assistive navigation always do. Two
+   layers: a contrast-colour halo underneath and the brand ring on
+   top, so the indicator survives on brand-coloured surfaces where a
+   brand-only ring would vanish. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sharp, 0px);
+  box-shadow: 0 0 0 4px var(--surface-default);
+  /* The halo sits between element and ring, so paint order matters. */
+  position: relative;
+  z-index: 1;
+  /* A focus ring must appear the instant focus lands. Utility classes that
+     transition `outline-color` (Tailwind's transition-colors does) otherwise
+     fade the indicator in over 150ms, which reads as lag when tabbing fast.
+     Element selectors here rather than :where() for the same reason: at zero
+     specificity a single utility class outranks the whole rule. */
+  transition: none;
+}
+
+/* Elements painted ON the brand need the inverse halo, or the ring
+   disappears into its own background. */
+:where([data-on-brand], .on-brand) :where(a, button, input, [tabindex]):focus-visible {
+  outline-color: var(--pure-white);
+  box-shadow: 0 0 0 4px var(--brand-700);
+}
+
+/* Windows High Contrast / forced-colors mode ignores author colours
+   entirely; the system keyword is the only thing that renders. */
+@media (forced-colors: active) {
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid Highlight;
+    box-shadow: none;
+  }
+}
+
+/* Skip link - the first thing a keyboard user should reach.
+   Off-canvas until focused, then pinned to the top-left. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10000;
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text-inverse);
+  background: var(--action-primary);
+  border: 1px solid var(--border-strong);
+  transform: translateY(calc(-100% - 16px));
+  transition: transform 150ms ease;
+}
+.skip-link:focus-visible { transform: translateY(0); }
+
+/* ---- Reduced motion ----
+   The ambient orbs, section transitions, and micro-interactions all
+   animate by default. Under prefers-reduced-motion we near-zero every
+   duration rather than removing animations outright: `animation: none`
+   can strip an element's final keyframe state and leave it mid-flight,
+   whereas a 1ms duration lands it on the end state immediately. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* The blurred background orbs are decorative and expensive; a
+     vestibular-sensitive visitor gains nothing from them drifting. */
+  body::before,
+  body::after { animation: none !important; }
+}

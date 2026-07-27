@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Design System Studio — Architectural Case Study</title>
+<script src="ds-color.js"></script>
 <script src="theme-init.js"></script>
 <link rel="stylesheet" href="styles.css">
 <style>
@@ -24,6 +25,35 @@ html,body{background:var(--surface-canvas);font-family:var(--font-sans);color:va
 .mono-box{font-family:var(--font-mono);font-size:12px;background:var(--surface-subtle);border:1px solid var(--border-subtle);padding:20px;line-height:1.8;color:var(--text-primary)}
 .tag{display:inline-block;padding:4px 12px;font-family:var(--font-mono);font-size:11px;font-weight:700;background:var(--brand-500);color:var(--pure-white);border-radius:9999px;margin-bottom:12px}
 
+@media (max-width: 720px){
+  .topbar{padding:0 18px;height:56px}
+  .topbar a{font-size:11px}
+  .container{margin:88px auto 80px;padding:0 18px}
+  .title{font-size:36px}
+  .subtitle{font-size:17px;margin-bottom:36px}
+  .section{margin-bottom:52px}
+  .section h2{font-size:24px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .metrics-bar{grid-template-columns:1fr 1fr;gap:20px}
+  .mono-box{font-size:11px;overflow-x:auto}
+}
+
+/* Decision cards - the part of a case study that actually gets read */
+.decision{background:var(--surface-default);border:1px solid var(--border-default);border-left:3px solid var(--brand-500);padding:24px 26px;margin:18px 0}
+.decision h3{font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0 0 10px;color:var(--text-primary)}
+.decision p{font-size:15px;margin:0 0 12px}
+.decision p:last-child{margin-bottom:0}
+.decision .rejected{font-size:14px;color:var(--text-muted);padding-top:12px;border-top:1px solid var(--border-subtle)}
+.decision .rejected strong{color:var(--text-secondary);font-weight:600}
+.lede{font-size:18px;line-height:1.65;color:var(--text-secondary)}
+.pull{font-family:var(--font-display);font-size:24px;line-height:1.35;letter-spacing:-.02em;color:var(--text-primary);border-left:3px solid var(--brand-500);padding:4px 0 4px 24px;margin:32px 0}
+table.evidence{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+table.evidence th{text-align:left;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--border-default)}
+table.evidence td{padding:11px 12px;border-bottom:1px solid var(--border-subtle);color:var(--text-secondary)}
+table.evidence td:first-child{color:var(--text-primary);font-weight:500}
+table.evidence td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.evidence-wrap{overflow-x:auto}
+
 /* Metrics Stat Bar */
 .metrics-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px;background:var(--surface-subtle);border:1px solid var(--border-default);margin:32px 0}
 .metric-num{font-family:var(--font-display);font-size:38px;font-weight:700;color:var(--brand-500);line-height:1}
@@ -37,7 +67,7 @@ html,body{background:var(--surface-canvas);font-family:var(--font-sans);color:va
 <body>
 
 <div class="topbar">
-  <a href="DesignSystem.html">← Back to Studio Workbench</a>
+  <a href="index.html">← Back to Studio Workbench</a>
   <div style="display:flex;gap:16px">
     <a href="Brand Guidelines.html" style="color:var(--brand-500)">Brand Manual (PDF) →</a>
   </div>
@@ -46,14 +76,24 @@ html,body{background:var(--surface-canvas);font-family:var(--font-sans);color:va
 <div class="container">
   <div class="kicker">Architectural Case Study · Design Engineering</div>
   <h1 class="title">Engineering a Zero-Build, Perceptual Design Token Engine</h1>
-  <p class="subtitle">An in-depth technical case study on building Design System Studio: balancing editorial aesthetics with strict OKLCH token math, multi-theme accessibility, and native browser ES module execution.</p>
+  <p class="subtitle">An in-depth technical case study on building Design System Studio: how a single hex value re-derives 180+ tokens, every component, three themes, and a 14-slide deck — and what it took to make that survive contact with WCAG.</p>
 
   <!-- Impact Metrics Bar -->
   <div class="metrics-bar">
-    <div><div class="metric-num">0ms</div><div class="metric-lbl">Build Step overhead</div></div>
-    <div><div class="metric-num">100%</div><div class="metric-lbl">WCAG AAA compliant</div></div>
-    <div><div class="metric-num">10-Step</div><div class="metric-lbl">OKLCH Perceptual Scale</div></div>
-    <div><div class="metric-num">6 Formats</div><div class="metric-lbl">Multi-Tool Token Export</div></div>
+    <div><div class="metric-num">1</div><div class="metric-lbl">Hex value to rebrand the system</div></div>
+    <div><div class="metric-num">4.8:1</div><div class="metric-lbl">Worst-case brand text contrast, any hue</div></div>
+    <div><div class="metric-num">12-Step</div><div class="metric-lbl">OKLCH perceptual scale</div></div>
+    <div><div class="metric-num">6</div><div class="metric-lbl">Token export formats</div></div>
+  </div>
+
+
+  <!-- The problem -->
+  <div class="section">
+    <div class="tag">The Problem</div>
+    <h2>Rebranding a design system is a search-and-replace job, and it shouldn't be</h2>
+    <p class="lede">Most systems bake their brand into their components. A colour lives in a Button, a tint lives in a Badge, a hex sits in a slide template. When the brand changes — a rebrand, a client project, a white-label build — someone has to find every one of those and hope they got them all. The work is tedious, invisible when it goes right, and embarrassing when it doesn't.</p>
+    <p>I wanted to find out what it takes to make that a non-event. The target was deliberately awkward: change one hex value and have it correctly re-derive a 12-step colour ramp, 180+ tokens, every component, three themes, and a 14-slide PowerPoint template — with the accessibility grades still holding at the other end.</p>
+    <p>The last clause is the hard part. Propagating a colour is easy. Propagating a colour <em>without quietly breaking contrast somewhere</em> is the actual problem, and it's what most of the interesting decisions below are about.</p>
   </div>
 
   <!-- Section 1: Visual Aesthetic -->
@@ -89,7 +129,7 @@ html,body{background:var(--surface-canvas);font-family:var(--font-sans);color:va
   <div class="section">
     <div class="tag">Pillar 02 · Perceptual Color Engine</div>
     <h2>OKLCH Perceptual Lightness vs. HSL Interpolation</h2>
-    <p>Standard HSL color scales suffer from non-uniform human perceptual lightness (e.g. pure yellow feels brighter than pure blue at 50% lightness). Design System Studio generates scales in the <strong>OKLCH perceptual color space</strong>, ensuring smooth lightness curves across all 10 steps (`50` through `950`).</p>
+    <p>Standard HSL color scales suffer from non-uniform human perceptual lightness (e.g. pure yellow feels brighter than pure blue at 50% lightness). Design System Studio generates scales in the <strong>OKLCH perceptual color space</strong>, ensuring smooth lightness curves across all 12 steps (<code>50</code> through <code>950</code>).</p>
 
     <!-- High-End Dashboard Lightness Chart -->
     <div class="graph-card" style="padding:28px">
@@ -176,6 +216,117 @@ html,body{background:var(--surface-canvas);font-family:var(--font-sans);color:va
       <code>--action-primary: var(--neutral-900);</code> &nbsp;·&nbsp; <code>--surface-default: var(--neutral-0);</code><br><br>
       <strong>Layer 3: Component Implementation</strong><br>
       <code>&lt;Button variant="primary"&gt;</code> &rarr; consumes <code>var(--action-primary)</code>
+    </div>
+  </div>
+
+
+  <!-- Decisions -->
+  <div class="section">
+    <div class="tag">Decisions &amp; Trade-offs</div>
+    <h2>Four decisions that shaped the system</h2>
+    <p>Each of these cost something. Listing what I gave up is more useful than listing what I built.</p>
+
+    <div class="decision">
+      <h3>Components address meaning, never a palette step</h3>
+      <p>A button asks for <code>--action-brand</code>, not <code>--brand-600</code>. Themes re-point the alias; the button never learns that a brand exists. This is the single decision the whole system rests on — it's why a brand swap reaches a PowerPoint export without any code in the export path knowing about brands.</p>
+      <p class="rejected"><strong>The cost:</strong> a layer of indirection that makes the system harder to learn. A newcomer reading <code>--action-brand</code> has to go look up what it resolves to. I accepted that because the alternative — components reaching into the palette directly — is exactly the coupling that makes rebranding a search-and-replace job.</p>
+    </div>
+
+    <div class="decision">
+      <h3>OKLCH for the ramp, not HSL</h3>
+      <p>HSL "lightness" is a geometric midpoint of the RGB cube, not a perceptual one. Build a ramp on a fixed HSL lightness ladder and step 600 lands at a very different perceived brightness for amber than for indigo — so brand-coloured text passes contrast for one brand and fails for another, silently, at swap time.</p>
+      <p>OKLab is constructed so equal steps in L are equal <em>perceived</em> steps at every hue. Moving the engine to it took the spread in "brand-600 against white" across seven test hues from <strong>3.00 down to 1.06</strong>, and let me tune the shade rungs so every hue clears WCAG AA.</p>
+      <p class="rejected"><strong>The cost:</strong> out-of-gamut colours. OKLCH can describe colours sRGB can't display, so the engine reduces chroma by binary search at constant lightness and hue rather than clipping per channel — clipping is cheaper but shifts the hue, which shows up as a ramp that drifts colour at its most saturated steps.</p>
+    </div>
+
+    <div class="decision">
+      <h3>Step 500 returns the seed verbatim; every other rung is normalised</h3>
+      <p>There's a real tension here. Anchor every rung to an absolute perceptual lightness and the ramp behaves predictably across brands — but the colour a user typed no longer appears in their own palette, which is baffling in a tool whose entire premise is "your brand seed". Derive every rung from the seed instead and you get the user's colour back, but the contrast guarantees evaporate.</p>
+      <p>The resolution: pin 500 to the seed exactly, target absolute lightness for everything else, and nudge only as far as needed to keep the ladder monotonic. You get your colour <em>and</em> predictable contrast.</p>
+      <p class="rejected"><strong>The cost:</strong> for an unusually light or dark seed, the rung immediately next to 500 compresses toward it. A pale yellow brand has a tighter 400–500 gap than a mid-tone blue does. That's a visible imperfection I chose over an invisible accessibility regression.</p>
+    </div>
+
+    <div class="decision">
+      <h3>"Paper" is a token, not a colour</h3>
+      <p><code>--pure-white</code> is not white. It's whichever end of the value range reads as background in the active theme, flipping to near-black under <code>data-theme="dark"</code>. Slides carry their own <code>data-theme</code>, so a light slide sitting inside dark chrome resolves its own tints correctly.</p>
+      <p class="rejected"><strong>The cost:</strong> a token named "white" that isn't white is a genuine trap for anyone new to the codebase, and it caused a real bug — see below.</p>
+    </div>
+  </div>
+
+
+  <!-- What the audit caught -->
+  <div class="section">
+    <div class="tag">Evidence</div>
+    <h2>The accessibility checker was lying, and finding out fixed three other things</h2>
+    <p>The studio ships a WCAG contrast auditor that grades every text-on-surface token pair. It looked authoritative. It was reporting frozen numbers: each pair stored a hardcoded hex captured from the original emerald light theme, so the panel reported the same ratios no matter which brand or theme was active. An accessibility tool confidently reporting stale data is worse than no tool, because it stops you looking.</p>
+
+    <p>Rewriting it to resolve token values from the live cascade at render time surfaced problems in sequence:</p>
+
+    <div class="evidence-wrap">
+      <table class="evidence">
+        <thead><tr><th>What surfaced</th><th>Root cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Ratios identical in every theme</td><td>Pairs stored hardcoded hexes, not token names</td><td>Resolve from the live cascade on render</td></tr>
+          <tr><td>Selected nav item graded 1.1:1 — Fail</td><td>Translucent overlay measured against transparency, not its backdrop</td><td>Composite over the real surface before measuring</td></tr>
+          <tr><td>Some tokens read as pure white</td><td><code>color-mix()</code> serialises as <code>color(srgb …)</code>; the regex only matched <code>rgba()</code></td><td>Normalise through a 1×1 canvas, which parses any valid syntax</td></tr>
+          <tr><td>Grade chips stayed emerald under a rose brand</td><td>Chip colours hardcoded alongside the thresholds</td><td>Derive from the brand scale; pick chip text by measured contrast</td></tr>
+          <tr><td>Solid brand button, dark theme: 2.54:1 — Fail</td><td><code>--action-brand</code> resolved to the raw seed, so its lightness was whatever the user picked</td><td>Point it at the rung the engine tunes to clear AA at every hue</td></tr>
+          <tr><td>High-contrast theme failing contrast</td><td>It overrode three rungs of the neutral ladder and inherited the rest from the light theme</td><td>Define the whole ladder, plus dark brand tints</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="pull">Every one of these was a value that had escaped the token layer. The bug wasn't in the checker — the checker was where the bug became visible.</p>
+
+    <p>With those fixed, the auditor became worth listening to — and immediately failed the system in two more places, both in themes I'd assumed were fine. All 30 audited pairs now meet AA or better across light, dark, and high-contrast.</p>
+    <p>That reframed the rest of the audit. Instead of hunting individual rendering glitches, the question became: <em>where else has a literal escaped?</em> That's what turned up a <code>--pure-white</code> that was never declared at <code>:root</code> — so in the default light state every <code>bg-[var(--pure-white)]</code> resolved to an invalid value, giving black text on black buttons and an export modal with no background. One missing declaration, three unrelated-looking symptoms.</p>
+  </div>
+
+  <!-- Accessibility -->
+  <div class="section">
+    <div class="tag">Accessibility</div>
+    <h2>The system documented a focus token it never used</h2>
+    <p><code>--focus-ring</code> was defined in all three themes and listed in the studio's own Token Map as "Focus outline". It was applied to nothing. There was not a single <code>:focus</code> rule in the codebase. Keyboard users got the browser's default blue — a colour from outside the system, invisible on some surfaces, and absent entirely on the search field, which carried an inline <code>outline: none</code>.</p>
+    <p>Fixing it properly meant more than adding a rule. Inline styles beat any selector, so eleven inline <code>outline: none</code> declarations had to go. A zero-specificity <code>:where()</code> selector loses to a single utility class, so the rule uses element selectors. And Tailwind's <code>transition-colors</code> animates <code>outline-color</code>, which faded the indicator in over 150ms — a focus ring has to be instant, so the rule opts out of transitions.</p>
+    <p>The system now also honours <code>prefers-reduced-motion</code>, ships a skip link, and has an accessible name on every interactive control in both apps.</p>
+    <div class="evidence-wrap">
+      <table class="evidence">
+        <thead><tr><th>Measure</th><th>Before</th><th>After</th></tr></thead>
+        <tbody>
+          <tr><td>Focus stops with a system-coloured ring</td><td class="num">0 / 20</td><td class="num">20 / 20</td></tr>
+          <tr><td>Interactive controls with no accessible name</td><td class="num">16</td><td class="num">0</td></tr>
+          <tr><td>Animations running under reduced-motion</td><td class="num">12</td><td class="num">0</td></tr>
+          <tr><td>Brand-600 on white, worst case across hues</td><td class="num">3.29:1</td><td class="num">4.78:1</td></tr>
+          <tr><td>Audited token pairs meeting WCAG AA (3 themes)</td><td class="num">24 / 30</td><td class="num">30 / 30</td></tr>
+          <tr><td>First render, cold load</td><td class="num">1357ms</td><td class="num">706ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- What's next -->
+  <div class="section">
+    <div class="tag">What I'd Do Next</div>
+    <h2>Where this still falls short</h2>
+    <p>Being specific about the gaps is more credible than claiming there aren't any.</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 8px">The contrast rule is duplicated</h3>
+        <p style="font-size:14px;margin:0">The OKLCH engine exists twice — once as a browser global for the studio, once as a TypeScript module for the bundled generator. They're verified byte-identical by a parity check, but a shared package would be the honest fix.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 8px">Contrast isn't enforced, only reported</h3>
+        <p style="font-size:14px;margin:0">The auditor tells you a pair fails. It should be able to refuse a seed that can't produce an accessible ramp, or auto-suggest the nearest one that can.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 8px">The deck editor is desktop-only</h3>
+        <p style="font-size:14px;margin:0">Below 720px it explains itself and offers a read-only preview rather than pretending to work. That's honest, not solved — a genuine touch editing model is a separate project.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 8px">No regression tests on the token layer</h3>
+        <p style="font-size:14px;margin:0">Every contrast figure here was measured by hand. Those measurements should be a test that fails the build when a seed stops clearing AA.</p>
+      </div>
     </div>
   </div>
 

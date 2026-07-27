@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Design System Studio — Universal Design Token & Component Workbench</title>
+<script src="ds-color.js"></script>
 <script src="theme-init.js"></script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="tokens/colors-dark.css">
@@ -26,15 +27,17 @@ a{color:var(--text-link)}a:hover{color:var(--text-link-hover)}
 ::-webkit-scrollbar-thumb{background:var(--neutral-300);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--neutral-400)}
 </style>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
 <script src="_ds_bundle.js"></script>
 </head>
 <body>
 <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#10b981"/><text x="50" y="62" font-family="Space Grotesk, sans-serif" font-size="46" font-weight="700" fill="#fff" text-anchor="middle">S</text></svg></template>
+<!-- First tab stop: lets keyboard users jump the 30-item sidebar. -->
+<a class="skip-link" href="#overview">Skip to content</a>
 <div id="root"></div>
-<script type="text/babel" src="designsystem.app.jsx"></script>
+<!-- Compiled from designsystem.app.jsx by build.mjs. Run `npm run build` after editing the source. -->
+<script src="designsystem.app.js" defer></script>
 <script src="grid-hover.js"></script>
 </body>
 </html>

@@ -6,16 +6,20 @@ Two applications share one token layer:
 
 | | | |
 |---|---|---|
-| **Studio** | `index.html` | Zero-build React 18 SPA. Token foundations, 20+ component sections, live customizer, WCAG auditor, multi-format export. |
+| **Studio** | `index.html` | Single-file React 18 SPA, no framework or router. Token foundations, 20+ component sections, live customizer, WCAG auditor, multi-format export. |
 | **Master PPT Generator** | `/generator` | React 19 + TypeScript + Vite app. Turns a structured document into a 14-slide deck and exports editable PowerPoint. |
 
 ---
 
 ## Key Features
 
-### 1. Token Engine & Scale Generator
-- **Algorithmic color scales**: A single hex seed generates a full 12-step ramp (`50`–`950`) for brand and accent, via an HSL lightness ladder that pins step `500` to the exact seed.
-- **Mood palette generator**: Type a mood (*Cyberpunk Neon*, *Luxury Gold*, *Nordic Forest*, *Electric Violet*, *Ocean Minimal*) and get a matched brand + accent pair. Unrecognized prompts fall through to a deterministic string-hash hue generator, so any input yields a stable, repeatable palette.
+### 1. Perceptual Token Engine (OKLCH)
+- **Algorithmic color scales**: A single hex seed generates a full 12-step ramp (`50`–`950`) for brand and accent, in the **OKLCH perceptual color space** ([`ds-color.js`](ds-color.js)).
+- **Why OKLCH**: HSL lightness is a geometric midpoint of the RGB cube, not a perceptual one — so a fixed lightness ladder puts step `600` at a very different perceived brightness for amber than for indigo, and brand-coloured text passes contrast for one brand and fails for another. OKLab is built so equal steps in `L` are equal *perceived* steps at every hue. The switch took the spread in "brand-600 against white" across seven test hues from **3.00 to 1.06**, and the shade rungs are tuned so every hue clears WCAG AA (worst case 4.78:1).
+- **Seed fidelity vs. predictability**: step `500` returns the seed verbatim; every other rung targets an absolute perceptual lightness and is nudged only as far as needed to keep the ladder monotonic. You get your exact colour *and* stable contrast.
+- **Gamut mapping**: out-of-gamut chroma is reduced by binary search at constant lightness and hue, rather than clipped per channel — clipping is cheaper but shifts the hue.
+- **Mood palette generator**: Type a mood (*Cyberpunk Neon*, *Luxury Gold*, *Nordic Forest*, *Electric Violet*, *Ocean Minimal*) and get a matched brand + accent pair. Unrecognized prompts fall through to a deterministic string-hash hue generator, so any input yields a stable, repeatable palette. No model involved — the same prompt always returns the same colours, which is the useful property here.
+- **One-click brand swap**: five curated seeds sit in the hero. Pressing one re-derives every token, component, theme, and slide in place.
 - **Live Token Customizer**: Hex pickers for brand, accent, neutral, and canvas, with an instant platform-wide cascade. Changes broadcast on a `ds-tokens-updated` event and persist to `localStorage`, so the studio, the brand book, and the PPT generator stay in lockstep.
 
 ### 2. Three Themes on One Token Contract
@@ -24,8 +28,13 @@ Two applications share one token layer:
 - A blocking `theme-init.js` in `<head>` restores the saved theme and brand scale before first paint — no flash.
 
 ### 3. WCAG Contrast Auditor
-- Resolves every text/surface token pair **from the live cascade at render time**, so it reports the theme and brand that are actually active. Translucent tokens are composited over their real backdrop before measuring.
+- Resolves every text/surface token pair **from the live cascade at render time**, so it reports the theme and brand that are actually active. Values are normalised through a 1×1 canvas, which parses any colour syntax the browser supports (`color-mix()` serialises as `color(srgb …)`, not `rgba()`), and translucent tokens are composited over their real backdrop before measuring.
 - Grades each pair AA / AA Large / AAA / Fail, and re-measures automatically when the theme or brand changes.
+- **All 30 audited pairs currently meet AA or better across light, dark, and high-contrast.** Getting there meant fixing three real failures the auditor surfaced once it stopped reporting frozen values.
+
+### 3b. Accessibility Baseline
+- `--focus-ring` applied via `:focus-visible` across both apps, in every theme, with a contrast halo so the indicator survives on brand-coloured surfaces. Element selectors (not `:where()`) so a utility class can't outrank it, and transitions are disabled on focus so the ring appears instantly.
+- `prefers-reduced-motion` honoured; skip link on the studio; an accessible name on every interactive control in both apps; `forced-colors` fallback for Windows High Contrast.
 
 ### 4. Font Playground
 - Swap `--font-display`, `--font-sans`, and `--font-mono` at runtime, with on-demand Google Fonts injection. Curated presets (Space Grotesk, Satoshi, JetBrains Mono, Outfit, Inter, Syne, Playfair Display) or any Google Fonts family by name. Selections persist across pages.
@@ -54,7 +63,7 @@ Two applications share one token layer:
 
 ## Tech Stack
 
-**Studio** — React 18 (UMD) · Babel Standalone · vanilla CSS custom properties · zero build step
+**Studio** — React 18 (UMD, production build) · vanilla CSS custom properties · esbuild (JSX transform only, no bundling)
 **PPT Generator** — React 19 · TypeScript · Vite 8 · Tailwind CSS v4 · pptxgenjs · jspdf · html2canvas · framer-motion · react-router
 **Shared** — CSS Color Module Level 4 (`color-mix`), Google Fonts, Lucide icons
 
@@ -62,16 +71,27 @@ Two applications share one token layer:
 
 ## Running Locally
 
-### Studio (no build required)
+### Studio
 
 ```bash
 git clone https://github.com/keyushhh/design-system-studio.git
 cd design-system-studio
-npx serve .
+npm install
+npm run build     # compile designsystem.app.jsx -> designsystem.app.js
+npm run serve     # http://localhost:3000
 ```
 
 Open `http://localhost:3000/` for the studio, or `/Brand%20Guidelines.html` for the brand book.
 `DesignSystem.html` is a legacy alias for the same app.
+
+The studio is still authored as a **single JSX file with no imports** — that constraint hasn't changed. What changed is that the compiler no longer ships to visitors: the page used to load Babel Standalone plus React's development build and transform 175KB of JSX on every view. Compiling once here cut first render from **1357ms to 706ms** and cleared the console.
+
+```bash
+npm run dev        # rebuild on save
+npm run build:all  # studio + PPT generator
+```
+
+> **Edit `designsystem.app.jsx`, never `designsystem.app.js`** — the latter is generated, and `npm run build` warns if it's older than its source.
 
 > Serve over HTTP rather than opening the file directly — `styles.css` uses `@import` and the studio reads `localStorage`, both of which behave differently under `file://`.
 
@@ -93,7 +113,10 @@ npm run build    # type-checks, then emits to ../generator
 ```text
 .
 ├── index.html                 # Studio entry point
-├── designsystem.app.jsx       # Studio app: token engine, sections, exports
+├── designsystem.app.jsx       # Studio app SOURCE — edit this
+├── designsystem.app.js        # Compiled bundle (generated; commit it)
+├── build.mjs                  # esbuild JSX transform
+├── ds-color.js                # OKLCH perceptual scale engine (shared)
 ├── theme-init.js              # Blocking theme + token restore (runs before paint)
 ├── styles.css                 # Global entry: @imports the token layer
 ├── Brand Guidelines.html      # Standalone brand manual (print-to-PDF)
@@ -111,7 +134,7 @@ npm run build    # type-checks, then emits to ../generator
 │
 ├── ppt-generator/             # Master PPT Generator — source
 │   └── src/
-│       ├── app/               # Shell, routing, SyncEngine, studioTheme
+│       ├── app/               # Shell, routing, SyncEngine, studioTheme, dsColor
 │       ├── features/
 │       │   ├── deck/          # Deck model, builder, store, theme resolution
 │       │   ├── generator/     # Canvas, sidebar, review, present, exporters
@@ -136,6 +159,8 @@ npm run build    # type-checks, then emits to ../generator
 **Theme state lives in one place.** `theme-init.js` owns the studio's theme; the generator's `SyncEngine` mirrors it and re-derives its own scales. Both read the same `localStorage` keys, and both listen for same-tab (`ds-tokens-updated`) and cross-tab (`storage`) changes.
 
 **Theme-relative "paper".** `--pure-white` is not white — it's whichever end of the value range reads as the background in the active theme, flipping to near-black under `data-theme="dark"`. Slides carry their own `data-theme`, so a light slide inside dark chrome resolves its own tints correctly.
+
+**One scale engine, verified twice.** `ds-color.js` (studio global) and `ppt-generator/src/app/dsColor.ts` (bundled module) are deliberate duplicates — the generator is a Vite build and can't share a browser global. They are checked byte-for-byte identical against the same seeds; edit them together.
 
 **No hardcoded color in chrome.** Any literal hex in a component is a bug: it's a value that can't follow a brand swap or a theme change. Status colors (danger / warning / success) are brand-independent but theme-dependent, and live as their own token group.
 

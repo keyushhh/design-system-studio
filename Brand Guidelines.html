@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="omelette-owns-print" content="true">
 <title>Design System Studio - Brand Guidelines</title>
+<script src="ds-color.js"></script>
 <script src="theme-init.js"></script>
 <link rel="stylesheet" href="styles.css">
 <style>
@@ -121,7 +122,11 @@ body::after{bottom:-20vh;left:-8vw;width:46vw;height:46vw;background:radial-grad
 :root[data-theme="dark"] .shadowbox{background:#f2f2f2}
 :root[data-theme="dark"] .pcard{border-color:rgba(255,255,255,.14)}
 :root[data-theme="dark"] .dot{box-shadow:0 0 0 1px rgba(255,255,255,.14)}
-:root[data-theme="dark"] .backbar{background:#1a1a1a !important;box-shadow:0 2px 4px rgba(0,0,0,.5),0 12px 32px -12px rgba(0,0,0,.7) !important}
+/* .backbar is a pointer-events:none layout shell pinned left:20px/right:20px -
+   it just holds the back link and the print button at opposite ends. Giving it
+   a background painted a black bar across the full viewport width in dark mode.
+   The two buttons inside already carry their own --action-primary /
+   --action-brand surfaces and shadows, so the wrapper stays transparent. */
 /* keep the "on light" logo demo genuinely light so the black wordmark reads */
 :root[data-theme="dark"] .logo-card.on-light{background:#fbfbfb;border-color:#e5e5e5}
 :root[data-theme="dark"] .logo-card.on-light .tag{color:#737373}

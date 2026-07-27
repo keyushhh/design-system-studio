@@ -7,11 +7,16 @@
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
-@import url("https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap");
 
-/* ---- Satoshi - bundled locally (project font files) so the family
-   ships with the design system and works offline. Weights match the
-   Fontshare import above; the CDN line remains as a network fallback. ---- */
+/* ---- Satoshi - bundled locally (project font files) so the family ships
+   with the design system and works offline.
+
+   There used to be a Fontshare @import here as well, "as a fallback". It
+   wasn't one: the browser fetched the same five weights twice, and because
+   an @import blocks on the network it was the single slowest request on the
+   page (~1.2s) for glyphs already sitting in assets/fonts/. The local
+   @font-face rules below are the real declaration; if they 404 the stack
+   falls through to the next family, which is the correct failure mode. ---- */
 @font-face{font-family:"Satoshi";font-style:normal;font-weight:300;font-display:swap;src:url("../assets/fonts/satoshi/Satoshi-Light.woff2") format("woff2")}
 @font-face{font-family:"Satoshi";font-style:normal;font-weight:400;font-display:swap;src:url("../assets/fonts/satoshi/Satoshi-Regular.woff2") format("woff2")}
 @font-face{font-family:"Satoshi";font-style:normal;font-weight:500;font-display:swap;src:url("../assets/fonts/satoshi/Satoshi-Medium.woff2") format("woff2")}

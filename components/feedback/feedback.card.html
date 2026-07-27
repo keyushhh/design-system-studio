@@ -1,5 +1,6 @@
 <!-- @dsCard group="Components" viewport="700x220" name="Feedback · Tooltip, Toast" subtitle="Hover tooltip and status toasts" -->
-<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="../../theme-init.js"></script><link rel="stylesheet" href="../../styles.css">
+<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="../../ds-color.js"></script>
+<script src="../../theme-init.js"></script><link rel="stylesheet" href="../../styles.css">
 <style>body{margin:0;background:var(--surface-canvas);font-family:var(--font-sans)}#r{padding:30px 28px;display:flex;flex-direction:column;gap:22px}
 .lab{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-faint);margin-bottom:12px}
 .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}</style>
@@ -9,7 +10,8 @@
 <script src="../../_ds_bundle.js"></script></head>
 <body><div id="r"></div>
 <script type="text/babel">
-const { Tooltip, Toast, Button } = window.Design System StudioDesignSystem_e71b95;
+/* The bundle exposes its components on window.DesignSystemStudio. */
+const { Tooltip, Toast, Button } = window.DesignSystemStudio;
 function Demo(){return(<>
  <div><div className="lab">Tooltip (hover the button)</div>
   <div className="row"><Tooltip label="Copies the deck URL"><Button variant="outline" size="sm" iconLeft="link">Copy Share Link</Button></Tooltip></div></div>

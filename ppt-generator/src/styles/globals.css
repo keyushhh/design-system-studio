@@ -129,3 +129,70 @@
   background-color: #ffffff !important;
   color: #171717 !important;
 }
+
+/* -------------------------------------------------------------------------
+   Focus & motion - mirrors the studio's styles.css so both apps behave
+   identically for keyboard and reduced-motion users. Tailwind's preflight
+   strips the UA focus ring, which means without this block the generator
+   has no visible focus state at all.
+   ------------------------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--pure-white);
+  /* The halo sits between element and ring, so paint order matters. */
+  position: relative;
+  z-index: 1;
+  /* A focus ring must appear the instant focus lands. Utility classes that
+     transition `outline-color` (Tailwind's transition-colors does) otherwise
+     fade the indicator in over 150ms, which reads as lag when tabbing fast.
+     Element selectors here rather than :where() for the same reason: at zero
+     specificity a single utility class outranks the whole rule. */
+  transition: none;
+}
+
+/* Contenteditable slide slots get the ring on the text itself, inset so it
+   doesn't collide with the dashed edit-affordance outline already there. */
+[data-editable]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+@media (forced-colors: active) {
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid Highlight;
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Ambient orb drift is purely decorative - stop it outright rather than
+     running it at 1ms, which would snap the orbs to a keyframe end state. */
+  .animate-orb-top-left,
+  .animate-orb-top-right,
+  .animate-orb-center,
+  .animate-orb-mid-left,
+  .animate-orb-lower,
+  .animate-orb-bottom { animation: none !important; }
+}

@@ -16,31 +16,42 @@
   --pure-white: #ffffff;
   --pure-black: #000000;
 
-  /* ---- Brand · Emerald (PRIMARY) ---- */
-  --brand-50:  #ecfdf5;
-  --brand-100: #d1fae5;
-  --brand-200: #a7f3d0;
-  --brand-300: #6ee7b7;
-  --brand-400: #34d399;
-  --brand-500: #10b981;  /* canonical brand emerald */
-  --brand-600: #059669;
-  --brand-650: #047857;
-  --brand-700: #047857;
-  --brand-800: #065f46;
-  --brand-900: #064e3b;
-  --brand-950: #022c22;
+  /* ---- Brand · Emerald (PRIMARY) ----
+     These are the DEFAULT scale, shown when no brand seed has been saved.
+     They are not hand-picked: they are the exact output of ds-color.js
+     generateScale('#10b981', 'brand') — the same OKLCH engine that runs at
+     runtime. Keeping them in sync matters. The previous values came from
+     the older HSL ramp, so a first-time visitor saw a palette the engine
+     would never produce, and --text-brand landed at 3.77:1 on white (AA
+     Large only) while a generated scale cleared AA. Regenerate with:
+       node -e "global.window=global;require('./ds-color.js');
+                console.log(window.DSColor.generateScale('#10b981','brand'))"
+     Seed in OKLCH: oklch(69.6% 0.149 162.5) */
+  --brand-50:  #e8fbf1;
+  --brand-100: #d0f4e1;
+  --brand-200: #abeaca;
+  --brand-300: #79d7ab;
+  --brand-400: #40c28e;
+  --brand-500: #10b981;  /* canonical brand emerald - pinned to the seed */
+  --brand-600: #00835a;  /* AA on white (4.78:1) - carries --text-brand */
+  --brand-650: #007851;
+  --brand-700: #006c49;
+  --brand-800: #005639;
+  --brand-900: #00402a;
+  --brand-950: #002d1c;
 
   /* ---- Accent · Green (SECONDARY, supports the emerald) ---- */
-  --accent-50:  #f0fdf4;
-  --accent-100: #dcfce7;
-  --accent-200: #bbf7d0;
-  --accent-300: #86efac;
-  --accent-400: #4ade80;
+  /* Generated the same way: generateScale('#22c55e', 'accent'). */
+  --accent-50:  #e8fceb;
+  --accent-100: #d0f5d6;
+  --accent-200: #aaecb6;
+  --accent-300: #78da8e;
+  --accent-400: #49ce70;
   --accent-500: #22c55e;
-  --accent-600: #16a34a;
-  --accent-700: #15803d;
-  --accent-800: #166534;
-  --accent-900: #14532d;
+  --accent-600: #00853a;
+  --accent-700: #006e2f;
+  --accent-800: #005723;
+  --accent-900: #004219;
 
   /* ---- Neutral (grayscale foundation) ---- */
   --neutral-0:   #ffffff;

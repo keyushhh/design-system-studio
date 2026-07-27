@@ -64,7 +64,7 @@ const ALIASES = [
   ['--border-default','neutral-200','Hairline borders'],
   ['--border-strong','neutral-300','Inputs, dividers'],
   ['--action-primary','neutral-900','Primary CTA'],
-  ['--action-brand','brand-600','Emerald action'],
+  ['--action-brand','brand-600','Brand action'],
   ['--focus-ring','brand-500','Focus outline'],
 ];
 
@@ -343,6 +343,60 @@ function Panel({ children, style }) {
   return React.createElement('div', { style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)', padding: 28, ...style } }, children);
 }
 
+
+/* ---- Hero brand switcher ----
+   The whole thesis of this system is that one value re-derives everything.
+   That should be demonstrable in the first five seconds, without reading a
+   word or opening a dialog - so the seeds live in the hero as five swatches.
+   Deliberately quiet: no pulse, no tooltip nag, no onboarding coachmark. The
+   proof is what happens to the page when you press one. */
+function BrandQuickSwitch({ push }) {
+  const [active, setActive] = useState(() => presetIdForBrand(
+    (() => { try { return localStorage.getItem('ds-active-brand'); } catch (e) { return null; } })()
+  ));
+
+  useEffect(() => {
+    const sync = (e) => setActive(e.detail?.preset || presetIdForBrand(e.detail?.brand));
+    window.addEventListener('ds-tokens-updated', sync);
+    return () => window.removeEventListener('ds-tokens-updated', sync);
+  }, []);
+
+  const applyPreset = (preset) => {
+    [generateScale(preset.brand, 'brand'), generateScale(preset.accent, 'accent')].forEach(scale =>
+      Object.keys(scale).forEach(prop => document.documentElement.style.setProperty(prop, scale[prop])));
+    setActive(preset.id);
+    publishTokens({ brand: preset.brand, accent: preset.accent, preset: preset.id });
+    if (push) push({ title: preset.name, message: 'Every token, component, and slide re-derived from one seed.', tone: 'brand' });
+  };
+
+  return React.createElement('div', { style: { marginTop: 44, paddingTop: 28, borderTop: '1px solid var(--border-subtle)' } },
+    React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--text-muted)', marginBottom: 14 } },
+      'Change the brand \u2014 watch the whole system follow'),
+    React.createElement('div', { role: 'group', 'aria-label': 'Brand presets', style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+      BRAND_PRESETS.map(preset => {
+        const isActive = active === preset.id;
+        return React.createElement('button', {
+          key: preset.id,
+          onClick: () => applyPreset(preset),
+          'aria-pressed': isActive,
+          title: preset.name + ' \u2014 ' + preset.brand,
+          style: {
+            display: 'inline-flex', alignItems: 'center', gap: 9,
+            padding: '9px 15px 9px 11px',
+            fontFamily: 'var(--font-mono)', fontSize: 11.5, letterSpacing: '.04em',
+            color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+            background: isActive ? 'var(--state-selected)' : 'var(--surface-default)',
+            border: '1px solid ' + (isActive ? 'var(--border-brand)' : 'var(--border-default)'),
+            cursor: 'pointer', transition: 'background 150ms, border-color 150ms, color 150ms'
+          },
+          onMouseEnter: e => { if (!isActive) e.currentTarget.style.borderColor = 'var(--border-strong)'; },
+          onMouseLeave: e => { if (!isActive) e.currentTarget.style.borderColor = 'var(--border-default)'; }
+        },
+          React.createElement('span', { 'aria-hidden': 'true', style: { width: 13, height: 13, borderRadius: '50%', background: preset.brand, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.12)' } }),
+          preset.name);
+      })));
+}
+
 /* ========== ONBOARDING WIZARD COMPONENT ========== */
 const WIZARD_ARCHETYPES = [
   { id: 'editorial', name: 'Editorial Precision', desc: 'Sharp 0px corners, high contrast typography, ultra-dense data grids.', radius: '0px', font: 'Space Grotesk' },
@@ -561,18 +615,18 @@ function OnboardingWizard({ open, onClose, push }) {
               React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Primary Seed Color'),
               React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
                 React.createElement('div', { style: { position: 'relative', width: 40, height: 40, background: seedColor, border: '1px solid var(--border-default)' } },
-                  React.createElement('input', { type: 'color', value: seedColor, onChange: e => setSeedColor(e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+                  React.createElement('input', { type: 'color', 'aria-label': 'Primary seed colour picker', value: seedColor, onChange: e => setSeedColor(e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
                 ),
-                React.createElement('input', { type: 'text', value: seedColor, onChange: e => setSeedColor(e.target.value), style: { flex: 1, height: 40, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 13, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', outline: 'none' } })
+                React.createElement('input', { type: 'text', 'aria-label': 'Primary seed hex value', value: seedColor, onChange: e => setSeedColor(e.target.value), style: { flex: 1, height: 40, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 13, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)' } })
               )
             ),
             React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, 'Accent Seed Color'),
               React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
                 React.createElement('div', { style: { position: 'relative', width: 40, height: 40, background: accentSeed, border: '1px solid var(--border-default)' } },
-                  React.createElement('input', { type: 'color', value: accentSeed, onChange: e => setAccentSeed(e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+                  React.createElement('input', { type: 'color', 'aria-label': 'Accent seed colour picker', value: accentSeed, onChange: e => setAccentSeed(e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
                 ),
-                React.createElement('input', { type: 'text', value: accentSeed, onChange: e => setAccentSeed(e.target.value), style: { flex: 1, height: 40, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 13, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', outline: 'none' } })
+                React.createElement('input', { type: 'text', 'aria-label': 'Accent seed hex value', value: accentSeed, onChange: e => setAccentSeed(e.target.value), style: { flex: 1, height: 40, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 13, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)' } })
               )
             )
           ),
@@ -645,56 +699,18 @@ function AliasTable({ push }) {
       React.createElement('span', { style: { color: 'var(--text-faint)', display: 'inline-flex' } }, React.createElement(Icon, { name: 'copy', size: 14 })))));
 }
 
-function hexToHsl(hex) {
-  let c = hex.replace('#', '');
-  if (c.length === 3) c = c.split('').map(x => x + x).join('');
-  const num = parseInt(c, 16);
-  let r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
-}
+/* ---- Perceptual scale math ----
+   All ramp generation is delegated to DSColor (ds-color.js), which works in
+   OKLCH so equal steps read as equal perceived lightness across every hue.
+   Keeping ONE implementation is the point: theme-init.js regenerates the same
+   scales before first paint, and any drift between the two would show up as a
+   flash of different colour on load. */
+const generateScale = (hexColor, type) =>
+  (window.DSColor ? window.DSColor.generateScale(hexColor, type) : {});
 
-function hslToHex(h, s, l) {
-  s /= 100; l /= 100;
-  const k = n => (n + h / 30) % 12;
-  const a = s * Math.min(l, 1 - l);
-  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
-  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
-}
-
-function generateScale(hexColor, type) {
-  const [h, s, l] = hexToHsl(hexColor);
-  // 650 is a real step in colors.css (--brand-650); omitting it left that token
-  // frozen on the built-in emerald whenever a different brand seed was applied.
-  const lightnessMap = type === 'brand' ? {
-    50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
-  } : {
-    50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
-  };
-
-  const scale = {};
-  Object.keys(lightnessMap).forEach(step => {
-    scale[`--${type}-${step}`] = hslToHex(h, s, lightnessMap[step]);
-  });
-  // Pin 500 to the exact seed. The HSL round-trip rounds (e.g. #6366f1 came
-  // back as #6467f2), which drifts the canonical brand color away from what
-  // the user actually picked.
-  scale[`--${type}-500`] = hexColor;
-  return scale;
-}
+/** Seed colour for a mood, as OKLCH -> hex. */
+const seedFromOklch = (l, c, h) =>
+  (window.DSColor ? window.DSColor.oklchToHex(l, c, h) : '#10b981');
 
 function LiveTokenCustomizer({ push }) {
   const [brand500, setBrand500] = useState('#10b981');
@@ -759,7 +775,7 @@ function LiveTokenCustomizer({ push }) {
     else publishTokens({ brand: brand500, accent: hex });
   };
 
-  const generateAiPalette = (customText) => {
+  const generateMoodPalette = (customText) => {
     const query = (customText || aiPrompt).toLowerCase();
     let b = '#10b981', a = '#22c55e';
     if (query.includes('cyber') || query.includes('neon') || query.includes('synth')) { b = '#f43f5e'; a = '#06b6d4'; }
@@ -773,8 +789,11 @@ function LiveTokenCustomizer({ push }) {
       for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
       const h1 = Math.abs(hash) % 360;
       const h2 = (h1 + 40) % 360;
-      b = hslToHex(h1, 75, 48);
-      a = hslToHex(h2, 80, 55);
+      // Generate the pair in OKLCH so an arbitrary prompt still yields two
+      // colours of matched perceived lightness - the same hash in HSL gave a
+      // washed-out yellow and a heavy blue for neighbouring hues.
+      b = seedFromOklch(0.62, 0.17, h1);
+      a = seedFromOklch(0.68, 0.16, h2);
     }
 
     setAiScale({ brand: b, accent: a, prompt: customText || aiPrompt });
@@ -782,7 +801,7 @@ function LiveTokenCustomizer({ push }) {
     applyBrandColor(b, true);
     applyAccentColor(a, true);
     publishTokens({ brand: b, accent: a, preset: 'custom' });
-    if (push) push({ title: 'AI OKLCH Scale Generated', message: `Generated scale for "${customText || aiPrompt}"`, tone: 'brand' });
+    if (push) push({ title: 'OKLCH Scale Generated', message: `Generated a perceptual ramp for "${customText || aiPrompt}"`, tone: 'brand' });
   };
 
   const updateToken = (type, value) => {
@@ -848,7 +867,7 @@ function LiveTokenCustomizer({ push }) {
       React.createElement(Button, { variant: 'outline', size: 'sm', onClick: resetTokens }, 'Reset Defaults')
     ),
     React.createElement('p', { style: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: 1.5 } },
-      'Customize core system tokens in real-time. Changing primary or accent colors automatically regenerates full 10-step color scales across the entire platform.'
+      'Customize core system tokens in real-time. Changing the primary or accent seed regenerates a full 12-step perceptual scale in OKLCH and cascades it across the entire platform \u2014 components, all three themes, and the deck templates.'
     ),
     React.createElement('div', { style: { display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' } },
       presets.map(p => React.createElement('button', {
@@ -871,23 +890,26 @@ function LiveTokenCustomizer({ push }) {
         p.name
       ))
     ),
-    /* AI OKLCH Generator Bar */
+    /* OKLCH mood generator bar. Named for what it does: a keyword map over
+       curated seed pairs, falling back to a deterministic string hash for
+       anything unrecognised. No model involved - the same prompt always
+       returns the same palette, which is the useful property here. */
     React.createElement('div', { style: { padding: 16, marginBottom: 24, background: 'var(--surface-subtle)', border: '1px solid var(--border-default)', display: 'flex', flexDirection: 'column', gap: 12 } },
       React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-        React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--brand-600)' } }, '✨ AI OKLCH Scale Generator'),
+        React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--brand-600)' } }, 'OKLCH Mood Palette Generator'),
         React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, 'Offline Perceptual Lightness Engine')
       ),
       React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
         React.createElement('div', { style: { flex: 1 } },
           React.createElement(Input, { size: 'sm', placeholder: 'Describe palette mood (e.g. Cyberpunk Neon, Luxury Gold, Nordic Forest)…', value: aiPrompt, onChange: e => setAiPrompt(e.target.value) })
         ),
-        React.createElement(Button, { variant: 'brand', size: 'sm', iconLeft: 'sliders', onClick: () => generateAiPalette() }, 'Generate AI Palette')
+        React.createElement(Button, { variant: 'brand', size: 'sm', iconLeft: 'sliders', onClick: () => generateMoodPalette() }, 'Generate Palette')
       ),
       React.createElement('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
         React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', marginRight: 4 } }, 'Quick Moods:'),
         moodPresets.map(m => React.createElement('button', {
           key: m.label,
-          onClick: () => { setAiPrompt(m.label); generateAiPalette(m.label); },
+          onClick: () => { setAiPrompt(m.label); generateMoodPalette(m.label); },
           style: { padding: '4px 9px', fontFamily: 'var(--font-mono)', fontSize: 10, border: '1px solid var(--border-default)', background: 'var(--surface-default)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }
         },
           React.createElement('span', { style: { width: 8, height: 8, borderRadius: '50%', background: m.brand } }),
@@ -897,39 +919,49 @@ function LiveTokenCustomizer({ push }) {
     ),
     React.createElement('div', { className: 'responsive-grid-2', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 } },
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--brand-500 (Primary Brand Scale)'),
+        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18, display: 'flex', justifyContent: 'space-between', gap: 8 } },
+          React.createElement('span', null, '--brand-500 (Primary Brand Scale)'),
+          /* Surface the perceptual coordinates the ramp is actually built from -
+             the engine is the interesting part, so show its working. */
+          React.createElement('span', { style: { color: 'var(--text-faint)' }, title: 'Seed in OKLCH: perceptual lightness, chroma, hue' },
+            window.DSColor ? window.DSColor.formatOklch(brand500) : '')),
         React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
           React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: brand500, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
-            React.createElement('input', { type: 'color', value: brand500, onChange: e => updateToken('brand', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+            React.createElement('input', { type: 'color', 'aria-label': 'Primary brand seed colour picker', value: brand500, onChange: e => updateToken('brand', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
           ),
-          React.createElement('input', { type: 'text', value: brand500, onChange: e => updateToken('brand', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+          React.createElement('input', { type: 'text', 'aria-label': 'Primary brand seed hex value', value: brand500, onChange: e => updateToken('brand', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box' } })
         )
       ),
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--accent-500 (Secondary Accent Scale)'),
+        React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18, display: 'flex', justifyContent: 'space-between', gap: 8 } },
+          React.createElement('span', null, '--accent-500 (Secondary Accent Scale)'),
+          /* Surface the perceptual coordinates the ramp is actually built from -
+             the engine is the interesting part, so show its working. */
+          React.createElement('span', { style: { color: 'var(--text-faint)' }, title: 'Seed in OKLCH: perceptual lightness, chroma, hue' },
+            window.DSColor ? window.DSColor.formatOklch(accent500) : '')),
         React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
           React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: accent500, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
-            React.createElement('input', { type: 'color', value: accent500, onChange: e => updateToken('accent', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+            React.createElement('input', { type: 'color', 'aria-label': 'Accent seed colour picker', value: accent500, onChange: e => updateToken('accent', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
           ),
-          React.createElement('input', { type: 'text', value: accent500, onChange: e => updateToken('accent', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+          React.createElement('input', { type: 'text', 'aria-label': 'Accent seed hex value', value: accent500, onChange: e => updateToken('accent', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box' } })
         )
       ),
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
         React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--neutral-900 (Action Primary)'),
         React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
           React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: neutral900, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
-            React.createElement('input', { type: 'color', value: neutral900, onChange: e => updateToken('neutral', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+            React.createElement('input', { type: 'color', 'aria-label': 'Action primary / neutral 900 colour picker', value: neutral900, onChange: e => updateToken('neutral', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
           ),
-          React.createElement('input', { type: 'text', value: neutral900, onChange: e => updateToken('neutral', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+          React.createElement('input', { type: 'text', 'aria-label': 'Action primary / neutral 900 hex value', value: neutral900, onChange: e => updateToken('neutral', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box' } })
         )
       ),
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
         React.createElement('label', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', minHeight: 18 } }, '--surface-canvas (Page Background)'),
         React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
           React.createElement('div', { style: { position: 'relative', width: 36, height: 36, flexShrink: 0, background: surfaceCanvas, border: '1px solid var(--border-default)', boxSizing: 'border-box' } },
-            React.createElement('input', { type: 'color', value: surfaceCanvas, onChange: e => updateToken('canvas', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
+            React.createElement('input', { type: 'color', 'aria-label': 'Surface canvas colour picker', value: surfaceCanvas, onChange: e => updateToken('canvas', e.target.value), style: { position: 'absolute', inset: -8, width: 60, height: 60, opacity: 0, cursor: 'pointer' } })
           ),
-          React.createElement('input', { type: 'text', value: surfaceCanvas, onChange: e => updateToken('canvas', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' } })
+          React.createElement('input', { type: 'text', 'aria-label': 'Surface canvas hex value', value: surfaceCanvas, onChange: e => updateToken('canvas', e.target.value), style: { flex: 1, height: 36, padding: '0 12px', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box' } })
         )
       )
     )
@@ -937,9 +969,9 @@ function LiveTokenCustomizer({ push }) {
 }
 
 function ColorSection({ push, theme }) {
-  return React.createElement(Section, { id: 'color', kicker: 'Foundations', title: 'Color', intro: 'Emerald is the single brand accent; everything else is a near-monochrome neutral scale. Swatches and values reflect the active theme - the light tint steps resolve to dark washes in dark mode. Click any row to copy its token.' },
+  return React.createElement(Section, { id: 'color', kicker: 'Foundations', title: 'Color', intro: 'One brand seed drives the whole palette; everything else is a near-monochrome neutral scale. Every swatch below is generated live in OKLCH from the active seed and reflects the active theme - the light tint steps resolve to dark washes in dark mode. Click any row to copy its token.' },
     React.createElement(LiveTokenCustomizer, { push }),
-    React.createElement(Sub, null, 'Brand · Emerald (primary)'),
+    React.createElement(Sub, null, 'Brand scale (primary)'),
     React.createElement(ColorTable, { rows: scaleRows('brand', [50,100,200,300,400,500,600,700,800,900,950]), push, theme }),
     React.createElement(Sub, null, 'Accent · Leaf (secondary)'),
     React.createElement(ColorTable, { rows: scaleRows('accent', [50,100,200,300,400,500,600,700,800,900]), push, theme }),
@@ -1237,6 +1269,7 @@ function RadiusSection() {
           React.createElement('input', {
             placeholder: 'Input primitive...',
             readOnly: true,
+            'aria-label': 'Input primitive preview',
             style: {
               padding: '10px 14px',
               border: '1px solid var(--border-default)',
@@ -1245,7 +1278,6 @@ function RadiusSection() {
               borderRadius: customRadius + 'px',
               fontFamily: 'var(--font-sans)',
               fontSize: 13,
-              outline: 'none'
             }
           }),
           React.createElement('div', {
@@ -1375,7 +1407,7 @@ function MotionSection() {
           React.createElement(Button, { variant: 'primary', style: { background: 'var(--brand-600)', color: 'var(--pure-white)' } }, 'Hover me'),
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, 'darken · 150ms')),
         React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } },
-          React.createElement('input', { placeholder: 'Focus me', style: { height: 44, padding: '0 14px', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)', fontSize: 14, outline: 'none', color: 'var(--text-primary)' }, onFocus: (ev) => { ev.target.style.borderColor = 'var(--brand-500)'; ev.target.style.boxShadow = '0 0 0 2px var(--brand-100)'; }, onBlur: (ev) => { ev.target.style.borderColor = 'var(--border-default)'; ev.target.style.boxShadow = 'none'; } }),
+          React.createElement('input', { placeholder: 'Focus me', style: { height: 44, padding: '0 14px', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }, onFocus: (ev) => { ev.target.style.borderColor = 'var(--brand-500)'; ev.target.style.boxShadow = '0 0 0 2px var(--brand-100)'; }, onBlur: (ev) => { ev.target.style.borderColor = 'var(--border-default)'; ev.target.style.boxShadow = 'none'; } }),
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' } }, 'ring · emerald')),
         React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } },
           React.createElement('div', { style: { width: 120, height: 44, background: 'var(--brand-500)', opacity: go ? 1 : 0.15, transition: 'opacity 500ms cubic-bezier(0,0,.2,1)' } }),
@@ -1947,7 +1979,9 @@ function StateMatrixSection() {
         const styleMap = {
           Default: { background: 'var(--action-primary)', color: 'var(--text-inverse)' },
           Hover:   { background: 'var(--action-primary-hover)', color: 'var(--text-inverse)' },
-          Focus:   { background: 'var(--action-primary)', color: 'var(--text-inverse)', boxShadow: '0 0 0 3px var(--brand-300)', outline: 'none' },
+          // Mirrors the real :focus-visible treatment in styles.css. A state matrix
+          // that documents a focus style the product doesn't use is worse than none.
+          Focus:   { background: 'var(--action-primary)', color: 'var(--text-inverse)', outline: '2px solid var(--focus-ring)', outlineOffset: '2px', boxShadow: '0 0 0 4px var(--surface-default)' },
           Active:  { background: 'var(--action-primary-active)', color: 'var(--text-inverse)', transform: 'scale(0.98)' },
         };
         return React.createElement('button', {
@@ -1965,7 +1999,8 @@ function StateMatrixSection() {
         };
         return React.createElement('input', {
           value: state, readOnly: true, disabled: state === 'Disabled',
-          style: { height: 40, padding: '0 12px', fontFamily: 'var(--font-sans)', fontSize: 13, outline: 'none', color: 'var(--text-primary)', background: 'var(--surface-default)', ...styleMap[state] }
+          'aria-label': 'Input specimen, ' + state + ' state',
+          style: { height: 40, padding: '0 12px', fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--text-primary)', background: 'var(--surface-default)', ...styleMap[state] }
         });
     }},
     { name: 'Badge', render: function(state) {
@@ -1974,7 +2009,7 @@ function StateMatrixSection() {
     }},
     { name: 'Switch', render: function(state) {
         var on = ['Focus','Active','Loading'].includes(state);
-        return React.createElement(Switch, { checked: on, onChange: function() {}, disabled: state === 'Disabled' });
+        return React.createElement(Switch, { checked: on, onChange: function() {}, disabled: state === 'Disabled', 'aria-label': 'Switch specimen, ' + state + ' state' });
     }},
   ];
   return React.createElement(Section, { id: 'statematrix', kicker: 'System', title: 'Component State Matrix', intro: 'Every interactive component across all six states. The definitive reference for interaction design consistency.' },
@@ -2361,7 +2396,7 @@ function figmaExport() {
     },
     spacing: nScale({ 0:0, 1:4, 2:8, 3:12, 4:16, 5:20, 6:24, 8:32, 10:40, 12:48, 16:64, 20:80, 24:96 }),
     radius: nScale({ sharp:0, full:9999 }),
-    $extensions: { 'com.figma.modeName': 'Design System Studio Emerald Light' },
+    $extensions: { 'com.figma.modeName': 'Design System Studio Light' },
   };
   const blob = new Blob([JSON.stringify(tokens, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -2462,11 +2497,14 @@ function App() {
   const [exportOpen, setExportOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
 
-  useEffect(() => {
-    if (!localStorage.getItem('ds-wizard-completed')) {
-      setWizardOpen(true);
-    }
-  }, []);
+  /* The wizard used to auto-open on a first visit, which meant the first
+     thing anyone saw was a three-step form asking them to name a brand -
+     a task, not a demonstration. Worse, its close button marked setup
+     "complete", so most people dismissed it and never saw the feature.
+
+     It's opt-in now. Visitors land on the finished, populated system and
+     the payoff is directly touchable in the hero (see BrandQuickSwitch);
+     the full wizard stays one click away in the top bar. */
   const filteredNav = search.trim() === ''
     ? NAV
     : NAV.filter(n => n[1] === null ? NAV.filter(m => m[1] && m[0].toLowerCase().includes(search.toLowerCase())).length > 0 : n[0].toLowerCase().includes(search.toLowerCase()));
@@ -2525,7 +2563,7 @@ function App() {
           React.createElement('span', { style: { position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', display: 'flex' } }, React.createElement(Icon, { name: 'search', size: 13 })),
           React.createElement('input', {
             type: 'text', placeholder: 'Search sections…', value: search, onChange: e => setSearch(e.target.value),
-            style: { width: '100%', padding: '7px 10px 7px 30px', fontFamily: 'var(--font-sans)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box' }
+            style: { width: '100%', padding: '7px 10px 7px 30px', fontFamily: 'var(--font-sans)', fontSize: 12, border: '1px solid var(--border-default)', background: 'var(--surface-canvas)', color: 'var(--text-primary)', boxSizing: 'border-box' }
           }))),
       React.createElement('nav', { style: { flex: 1, overflowY: 'auto', padding: '12px 12px' } },
         visibleNav.map((n, i) => n[1] === null
@@ -2550,7 +2588,7 @@ function App() {
       )
     ),
     /* main */
-    React.createElement('main', { ref: mainRef, className: 'main-content', style: { flex: 1, overflowY: 'auto', height: '100%', position: 'relative' } },
+    React.createElement('main', { ref: mainRef, id: 'main-content', tabIndex: -1, className: 'main-content', style: { flex: 1, overflowY: 'auto', height: '100%', position: 'relative' } },
       /* Top Right Navigation CTA Bar */
       React.createElement('div', {
         style: {
@@ -2574,7 +2612,8 @@ function App() {
               React.createElement('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--text-muted)', marginTop: 4 } }, l)))),
           React.createElement('div', { style: { display: 'flex', gap: 12, marginTop: 40 } },
             React.createElement(Button, { variant: 'primary', iconLeft: 'download', onClick: figmaExport }, 'Export Figma Tokens'),
-            React.createElement(Button, { variant: 'outline', onClick: () => goto('color') }, 'Browse foundations'))),
+            React.createElement(Button, { variant: 'outline', onClick: () => goto('color') }, 'Browse foundations')),
+          React.createElement(BrandQuickSwitch, { push })),
         React.createElement(ColorSection, { push, theme }),
         React.createElement(TypeSection, { push }),
         React.createElement(SpacingSection, null),

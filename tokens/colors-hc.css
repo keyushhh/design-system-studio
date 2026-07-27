@@ -13,9 +13,29 @@
   --surface-brand:         #ffffff;
   --surface-brand-subtle:  #141414;
 
+  /* The HC theme used to override only 50/100/200 and inherit the rest from
+     the light ladder, so --neutral-600 (#525252, a mid grey meant for light
+     surfaces) sat on --neutral-100 (#1a1a1a) at 2.23:1 - a fail, in the theme
+     whose entire purpose is contrast. High contrast needs the WHOLE ladder. */
+  --neutral-0:             #000000;
   --neutral-50:            #141414;
   --neutral-100:           #1a1a1a;
+  --neutral-150:           #202020;
   --neutral-200:           #262626;
+  --neutral-300:           #404040;
+  --neutral-400:           #8a8a8a;
+  --neutral-500:           #b5b5b5;
+  --neutral-600:           #d4d4d4;   /* body text on a sunken surface: 11.6:1 */
+  --neutral-700:           #e5e5e5;
+  --neutral-800:           #f2f2f2;
+  --neutral-900:           #ffffff;
+  --neutral-950:           #ffffff;
+
+  /* Same problem on the brand ramp: --brand-50 stayed a near-white tint, so
+     --brand-700 (remapped to the light brand-300) on it measured 1.45:1. In a
+     dark high-contrast theme the "subtle brand surface" has to be dark. */
+  --brand-50:              #0d1a14;
+  --brand-100:             #12241b;
 
   --text-primary:   #ffffff;
   --text-secondary: #e5e5e5;

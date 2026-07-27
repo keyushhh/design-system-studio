@@ -11,6 +11,7 @@
    ============================================================ */
 (function () {
   var KEY = 'design-system-studio-theme';
+  var global_DSColor = window.DSColor;
 
   function read() {
     try { return localStorage.getItem(KEY); } catch (e) { return null; }
@@ -44,51 +45,19 @@
       var savedBrand = localStorage.getItem('ds-active-brand');
       var savedAccent = localStorage.getItem('ds-active-accent');
       
-      function hexToHsl(hex) {
-        let c = hex.replace('#', '');
-        if (c.length === 3) c = c.split('').map(x => x + x).join('');
-        const num = parseInt(c, 16);
-        let r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
-        r /= 255; g /= 255; b /= 255;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        let h = 0, s = 0, l = (max + min) / 2;
-        if (max !== min) {
-          const d = max - min;
-          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-          switch (max) {
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-          }
-          h /= 6;
-        }
-        return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
-      }
-
-      function hslToHex(h, s, l) {
-        s /= 100; l /= 100;
-        const k = n => (n + h / 30) % 12;
-        const a = s * Math.min(l, 1 - l);
-        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
-        return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
-      }
-
-      function generateScale(hexColor, type) {
-        const [h, s, l] = hexToHsl(hexColor);
-        const lightnessMap = type === 'brand' ? {
-          50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
-        } : {
-          50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
-        };
-        Object.keys(lightnessMap).forEach(step => {
-          document.documentElement.style.setProperty(`--${type}-${step}`, hslToHex(h, s, lightnessMap[step]));
+      /* Scale math lives in ds-color.js (OKLCH). If that script failed to
+         load, skip regeneration rather than fall back to a different colour
+         space - a silently different ramp is worse than the CSS defaults. */
+      function applyScale(seedHex, type) {
+        if (!global_DSColor || !seedHex) return;
+        var scale = global_DSColor.generateScale(seedHex, type);
+        Object.keys(scale).forEach(function (prop) {
+          document.documentElement.style.setProperty(prop, scale[prop]);
         });
-        document.documentElement.style.setProperty(`--${type}-500`, hexColor);
       }
 
-      if (savedBrand) generateScale(savedBrand, 'brand');
-      if (savedAccent) generateScale(savedAccent, 'accent');
+      applyScale(savedBrand, 'brand');
+      applyScale(savedAccent, 'accent');
 
       // Dynamic Font Restoration
       var savedDisplayFont = localStorage.getItem('ds-font-display');

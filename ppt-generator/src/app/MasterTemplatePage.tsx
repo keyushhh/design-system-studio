@@ -4,6 +4,7 @@ import { PresentationCanvas } from '../features/generator/PresentationCanvas';
 import { ReviewModal } from '../features/generator/ReviewModal';
 import { PresentMode } from '../features/generator/PresentMode';
 import { KeyboardShortcutsHelp } from '../features/generator/KeyboardShortcutsHelp';
+import { SmallScreenNotice } from '../features/generator/SmallScreenNotice';
 import { useToast } from '../features/toast/Toast';
 import type { DocumentNode } from '../features/business-record/parser/ast';
 import type { Deck, SlideContent, ThemeMode } from '../features/deck/types';
@@ -680,6 +681,7 @@ export function MasterTemplatePage() {
 
       {/* Present - top-right of the frame, opens fullscreen slideshow. */}
       <button
+        id="btn-present"
         onClick={() => displayDeck.slides.some((s) => !s.hidden) && setPresentOpen(true)}
         style={{
           position: 'fixed',
@@ -781,6 +783,7 @@ export function MasterTemplatePage() {
         ast={ast}
       />
       <KeyboardShortcutsHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <SmallScreenNotice />
     </div>
   );
 }

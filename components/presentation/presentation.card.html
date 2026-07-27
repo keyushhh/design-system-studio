@@ -1,5 +1,6 @@
 <!-- @dsCard group="Components" viewport="700x430" name="Presentation · Eyebrow, HUD, Slide frame, Metric" subtitle="The editorial slide primitives" -->
-<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="../../theme-init.js"></script><link rel="stylesheet" href="../../styles.css">
+<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="../../ds-color.js"></script>
+<script src="../../theme-init.js"></script><link rel="stylesheet" href="../../styles.css">
 <style>body{margin:0;background:var(--surface-canvas);font-family:var(--font-sans);color:var(--text-primary)}
 #r{padding:22px 26px;display:flex;flex-direction:column;gap:18px}
 .lab{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-faint)}
@@ -11,7 +12,8 @@
 </head>
 <body><div id="r"></div>
 <script type="text/babel">
-const { Eyebrow, HudBar, SlideFrame, MetricValue } = window.Design System StudioDesignSystem_e71b95;
+/* The bundle exposes its components on window.DesignSystemStudio. */
+const { Eyebrow, HudBar, SlideFrame, MetricValue } = window.DesignSystemStudio;
 const dark = document.documentElement.getAttribute('data-theme') === 'dark';
 function Demo(){return(
 <>

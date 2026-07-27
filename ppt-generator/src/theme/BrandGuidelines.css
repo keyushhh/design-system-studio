@@ -170,3 +170,17 @@
     print-color-adjust: exact !important;
   }
 }
+
+/* Below the sidebar breakpoint the editor's fixed chrome has nowhere to go:
+   the Edit/Reset/undo/redo cluster and the Present button collide with each
+   other at the top of the viewport. Editing isn't available at this size
+   (see SmallScreenNotice), so hide the controls rather than stack them. */
+@media (max-width: 720px) {
+  #btn-edit-content,
+  #btn-reset-deck,
+  #btn-undo,
+  #btn-redo,
+  #btn-present { display: none !important; }
+  /* Clear the fixed back bar rendered by SmallScreenNotice. */
+  .wg-doc .book { padding-top: calc(68px + env(safe-area-inset-top, 0px)); }
+}
