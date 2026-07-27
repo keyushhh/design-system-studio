@@ -73,6 +73,21 @@
   --color-secondary-900: var(--secondary-900);
   --color-secondary-950: var(--secondary-950);
 
+  /* Route Tailwind's built-in status utilities (bg-red-50, text-amber-800, …)
+     through the theme-aware status tokens, so a `hover:bg-red-50` doesn't
+     flash a paper-white pink swatch on the dark canvas. */
+  --color-red-50: var(--danger-surface);
+  --color-red-100: var(--danger-surface);
+  --color-red-200: var(--danger-border);
+  --color-red-500: var(--danger-text);
+  --color-red-600: var(--danger-text);
+  --color-red-700: var(--danger-text);
+  --color-amber-50: var(--warning-surface);
+  --color-amber-100: var(--warning-surface);
+  --color-amber-200: var(--warning-border);
+  --color-amber-300: var(--warning-border);
+  --color-amber-800: var(--warning-text);
+
   /* Map Accent scale to dynamic CSS properties */
   --color-accent-50: var(--accent-50);
   --color-accent-100: var(--accent-100);
@@ -120,8 +135,19 @@
   --bg-white: #ffffff;
   --bg-card-accent: #FAF9F6;
 
+  /* Theme-relative "paper" color. Flips to near-black under
+     [data-theme="dark"] (see globals.css) so anything painted on
+     --neutral-900 keeps a readable foreground in both themes.
+     MUST be declared here: the theme blocks in globals.css only
+     apply once a data-theme attribute exists, and without this
+     fallback every `bg-[var(--pure-white)]` / `text-[var(--pure-white)]`
+     resolves to an invalid value in the default (light) state. */
+  --pure-white: #ffffff;
+  --pure-black: #000000;
+
   --neutral-50: #FBFBFB;
   --neutral-100: #f5f5f5;
+  --neutral-150: #eeeeee;
   --neutral-200: #e5e5e5;
   --neutral-300: #d4d4d4;
   --neutral-400: #a3a3a3;
@@ -184,7 +210,7 @@
   --text-primary: var(--neutral-900);
   --text-secondary: var(--neutral-600);
   --text-muted: var(--neutral-500);
-  --text-inverse: #ffffff;
+  --text-inverse: var(--pure-white);
   --border-default: var(--neutral-200);
   --border-subtle: var(--neutral-100);
   --border-strong: var(--neutral-300);
@@ -192,6 +218,18 @@
   --action-primary-hover: var(--emerald-700);
   --action-primary-subtle: var(--emerald-50);
   --focus-ring: var(--emerald-500);
+
+  /* Status colors. Brand-independent (a red warning must stay red whatever the
+     brand seed is) but theme-dependent, so they get flipped in globals.css. */
+  --danger-text: #dc2626;
+  --danger-surface: #fef2f2;
+  --danger-border: #fecaca;
+  --warning-text: #b45309;
+  --warning-surface: #fffbeb;
+  --warning-border: #fcd34d;
+  --success-text: #047857;
+  --success-surface: #ecfdf5;
+  --success-border: #a7f3d0;
 }
 
 @layer base {

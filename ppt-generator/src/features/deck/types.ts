@@ -157,4 +157,9 @@ export interface Deck {
   logoUrl?: string;
   /** Deck-wide presentation theme mode: 'hybrid' (default balance), 'light', or 'dark'. */
   themeMode?: ThemeMode;
+  /** True once the author picked a deck theme from the sidebar control. Until
+   *  then the deck is free to follow the Design System Studio theme, so opening
+   *  the generator in dark mode doesn't show light slides on a dark canvas.
+   *  Once set, the author's choice wins and never gets overwritten. */
+  themeModePinned?: boolean;
 }

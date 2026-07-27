@@ -17,7 +17,7 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 const DURATION_MS: Record<ToastKind, number> = { error: 4000, success: 1800, info: 1800 };
 
 const KIND_COLOR: Record<ToastKind, string> = {
-  error: '#dc2626',
+  error: 'var(--danger-text)',
   success: 'var(--emerald-500)',
   info: 'var(--neutral-900)',
 };
@@ -63,7 +63,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               alignItems: 'flex-start',
               gap: 10,
               padding: '12px 14px',
-              background: '#fff',
+              // --pure-white is theme-relative (near-black under data-theme="dark"),
+              // so this stays the opposite of --neutral-800 below in both themes.
+              background: 'var(--pure-white)',
               border: `1px solid ${KIND_COLOR[t.kind]}`,
               borderLeft: `4px solid ${KIND_COLOR[t.kind]}`,
               borderRadius: 'var(--radius-sharp)',

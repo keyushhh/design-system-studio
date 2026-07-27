@@ -12,6 +12,18 @@ import type {
   ProcessStep,
   RegionSector,
 } from './types';
+import type { ThemeMode } from './types';
+import { isStudioThemeDark } from '../../app/studioTheme';
+
+/**
+ * The deck theme a new (or still-unpinned) deck should render in.
+ * A dark studio shell with light slides reads as a bug, so the deck mirrors the
+ * studio until the author overrides it from the sidebar's theme control.
+ */
+export function defaultDeckThemeMode(): ThemeMode {
+  if (typeof window === 'undefined') return 'hybrid';
+  return isStudioThemeDark() ? 'dark' : 'hybrid';
+}
 
 // ---------------------------------------------------------------------------
 // Template registry - canonical 14-slide skeleton (order, groups, titles)
@@ -60,13 +72,11 @@ export function createBlankSlide(): SlideInstance {
 
 /** The pristine master template - all 14 slides, no content, nothing hidden. */
 export function createTemplateDeck(): Deck {
-  // Sync initialization to Design System theme if available
-  const dsTheme = typeof window !== 'undefined' ? localStorage.getItem('ds-theme') : null;
-  const defaultMode = dsTheme === 'dark' ? 'dark' : 'hybrid';
-  
   return {
     generated: false,
-    themeMode: defaultMode,
+    // Unpinned: follows the Design System Studio theme until the author picks a
+    // deck theme from the sidebar control (see themeModePinned).
+    themeMode: defaultDeckThemeMode(),
     slides: TEMPLATE_SLIDES.map((t) => ({
       instanceId: mintInstanceId(t.templateId),
       templateId: t.templateId,
@@ -258,7 +268,12 @@ export function analyzeContentChecklist(deck: Deck): ContentChecklist {
 // Deck builder - Business Record AST → populated Deck
 // ---------------------------------------------------------------------------
 
-export function buildDeckFromDocument(ast: DocumentNode): Deck {
+/** @param carryTheme Deck theme to preserve across a regenerate (the author's
+ *  pinned choice, if any). Defaults to whatever the studio theme implies. */
+export function buildDeckFromDocument(
+  ast: DocumentNode,
+  carryTheme?: { themeMode?: ThemeMode; themeModePinned?: boolean }
+): Deck {
   const meta = ast.metadata.values;
 
   // Bucket every section by the template family it feeds.
@@ -534,5 +549,11 @@ export function buildDeckFromDocument(ast: DocumentNode): Deck {
   }
   indexSlide.content.parts = parts.length ? parts : undefined;
 
-  return { slides, generated: true, logoUrl: meta.logo };
+  return {
+    slides,
+    generated: true,
+    logoUrl: meta.logo,
+    themeMode: carryTheme?.themeModePinned ? carryTheme.themeMode : defaultDeckThemeMode(),
+    themeModePinned: carryTheme?.themeModePinned,
+  };
 }

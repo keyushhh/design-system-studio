@@ -6,16 +6,18 @@ import { PresentMode } from '../features/generator/PresentMode';
 import { KeyboardShortcutsHelp } from '../features/generator/KeyboardShortcutsHelp';
 import { useToast } from '../features/toast/Toast';
 import type { DocumentNode } from '../features/business-record/parser/ast';
-import type { Deck, SlideContent } from '../features/deck/types';
+import type { Deck, SlideContent, ThemeMode } from '../features/deck/types';
 import { saveLibraryEntry, type LibraryEntry } from '../features/business-record/libraryStore';
 import type { CampaignType } from '../features/business-record/sampleDecks';
 import { isSlideDark } from '../features/deck/themeHelper';
 import {
   createTemplateDeck,
   buildDeckFromDocument,
+  defaultDeckThemeMode,
   mintInstanceId,
   createBlankSlide,
 } from '../features/deck/deckBuilder';
+import { subscribeStudioTokens } from './studioTheme';
 import {
   ensureInitialized,
   listProjects,
@@ -46,7 +48,10 @@ type HistoryAction =
   | { type: 'commit'; deck: Deck }
   | { type: 'set'; deck: Deck; past?: Deck[]; future?: Deck[] }
   | { type: 'undo' }
-  | { type: 'redo' };
+  | { type: 'redo' }
+  /** Ambient theme sync from the studio - replaces the present deck in place
+   *  without pushing an undo entry. No-ops on a pinned deck. */
+  | { type: 'retheme'; themeMode: ThemeMode };
 
 function historyReducer(state: DeckHistory, action: HistoryAction): DeckHistory {
   switch (action.type) {
@@ -57,6 +62,11 @@ function historyReducer(state: DeckHistory, action: HistoryAction): DeckHistory 
     }
     case 'set':
       return { past: action.past ?? [], present: action.deck, future: action.future ?? [] };
+    case 'retheme': {
+      const current = state.present;
+      if (current.themeModePinned || current.themeMode === action.themeMode) return state;
+      return { ...state, present: { ...current, themeMode: action.themeMode } };
+    }
     case 'undo': {
       if (state.past.length === 0) return state;
       const previous = state.past[state.past.length - 1];
@@ -188,6 +198,23 @@ export function MasterTemplatePage() {
     setProjects(listProjects()); // keep updatedAt ordering fresh in the switcher
   }, [activeId, ast, deck, draft, dirty, history.past, history.future, showToast]);
 
+  // Keep an unpinned deck's theme aligned with the Design System Studio theme -
+  // on mount, and whenever the studio theme changes in another tab while this
+  // page is open. A theme the author picked explicitly is never overwritten.
+  // 'retheme' deliberately doesn't push an undo entry: it's an ambient sync,
+  // not an edit.
+  useEffect(() => {
+    const sync = () => {
+      const mode = defaultDeckThemeMode();
+      dispatchHistory({ type: 'retheme', themeMode: mode });
+      setDraft((prev) =>
+        prev && !prev.themeModePinned && prev.themeMode !== mode ? { ...prev, themeMode: mode } : prev
+      );
+    };
+    sync();
+    return subscribeStudioTokens(sync);
+  }, []);
+
   /** Route a deck mutation to the draft while editing, else commit directly. */
   const mutateDeck = useCallback(
     (fn: (prev: Deck) => Deck) => {
@@ -205,17 +232,17 @@ export function MasterTemplatePage() {
     if (!ast) return;
     // 'set', not commitDeck: generating establishes a new baseline, so Undo has
     // nothing to go back to - it shouldn't light up the moment a deck is built.
-    dispatchHistory({ type: 'set', deck: buildDeckFromDocument(ast) });
+    dispatchHistory({ type: 'set', deck: buildDeckFromDocument(ast, deck) });
     setDraft(null);
     setDirty(false);
-  }, [ast]);
+  }, [ast, deck]);
 
   /** Import path: set the source AND build the deck in one step, so "Import & Load"
    *  in the Source Material modal doubles as Generate (no separate click needed).
    *  Uses the freshly parsed AST directly rather than waiting on `ast` state. */
   const handleImportAndGenerate = useCallback((imported: DocumentNode) => {
     setAst(imported);
-    const built = buildDeckFromDocument(imported);
+    const built = buildDeckFromDocument(imported, deck);
     dispatchHistory({ type: 'set', deck: built });
     setDraft(null);
     setDirty(false);
@@ -228,7 +255,7 @@ export function MasterTemplatePage() {
         setProjects(listProjects());
       }
     }
-  }, [projects, activeId]);
+  }, [projects, activeId, deck]);
 
   /** Load a saved use case library entry directly - restores the deck exactly as
    *  saved (edits included) rather than re-running the parser/builder over its ast. */
@@ -321,7 +348,8 @@ export function MasterTemplatePage() {
 
   const handleSetThemeMode = useCallback(
     (mode: 'hybrid' | 'light' | 'dark') => {
-      mutateDeck((prev) => ({ ...prev, themeMode: mode }));
+      // Pin it: an explicit pick outranks the studio theme from here on.
+      mutateDeck((prev) => ({ ...prev, themeMode: mode, themeModePinned: true }));
       showToast(`Deck Theme set to ${mode.toUpperCase()}`);
     },
     [mutateDeck, showToast]
@@ -581,9 +609,9 @@ export function MasterTemplatePage() {
             borderRadius: 0,
             cursor: editing ? 'default' : 'pointer',
             transition: 'background .15s, color .15s, border-color .15s',
-            borderColor: editing ? 'var(--emerald-200)' : '#d1d5db',
-            background: editing ? 'var(--emerald-50)' : '#ffffff',
-            color: editing ? 'var(--emerald-600)' : '#374151',
+            borderColor: editing ? 'var(--emerald-200)' : 'var(--neutral-300)',
+            background: editing ? 'var(--emerald-50)' : 'var(--pure-white)',
+            color: editing ? 'var(--emerald-600)' : 'var(--neutral-700)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
           }}
         >
@@ -606,9 +634,9 @@ export function MasterTemplatePage() {
             cursor: canReset ? 'pointer' : 'not-allowed',
             transition: 'background .15s, color .15s, border-color .15s, opacity .15s',
             opacity: canReset ? 1 : 0.4,
-            borderColor: resetArmed ? '#fecaca' : '#d1d5db',
-            background: resetArmed ? '#fef2f2' : '#ffffff',
-            color: resetArmed ? '#dc2626' : '#374151',
+            borderColor: resetArmed ? 'var(--danger-border)' : 'var(--neutral-300)',
+            background: resetArmed ? 'var(--danger-surface)' : 'var(--pure-white)',
+            color: resetArmed ? 'var(--danger-text)' : 'var(--neutral-700)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
           }}
         >
@@ -626,13 +654,13 @@ export function MasterTemplatePage() {
           const iconBtn = (enabled: boolean) => ({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             width: 34, height: 34,
-            border: '1px solid #d1d5db',
+            border: '1px solid var(--neutral-300)',
             borderRadius: 0,
             cursor: enabled ? 'pointer' : 'not-allowed',
             transition: 'background .15s, color .15s, opacity .15s',
             opacity: enabled ? 1 : 0.4,
-            background: '#ffffff',
-            color: '#374151',
+            background: 'var(--pure-white)',
+            color: 'var(--neutral-700)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
           });
           const undoEnabled = canUndo && !editing;
@@ -664,8 +692,8 @@ export function MasterTemplatePage() {
           border: 'none',
           borderRadius: 0,
           cursor: 'pointer',
-          background: '#111827',
-          color: '#ffffff',
+          background: 'var(--neutral-900)',
+          color: 'var(--pure-white)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
         }}
       >
@@ -696,7 +724,7 @@ export function MasterTemplatePage() {
             gap: 14,
             padding: '10px 12px 10px 18px',
             background: 'var(--neutral-900)',
-            color: '#fff',
+            color: 'var(--pure-white)',
             boxShadow: 'var(--shadow-soft)',
             zIndex: 100,
             borderRadius: 'var(--radius-sharp)',
@@ -708,7 +736,7 @@ export function MasterTemplatePage() {
               fontSize: 11,
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
-              color: dirty ? '#fff' : 'rgba(255,255,255,0.55)',
+              color: dirty ? 'var(--pure-white)' : 'color-mix(in srgb, var(--pure-white) 55%, transparent)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -716,13 +744,13 @@ export function MasterTemplatePage() {
           </span>
           <button
             onClick={handleSaveEdits}
-            className="h-[34px] px-4 text-[12px] font-bold whitespace-nowrap bg-white text-neutral-900 hover:bg-neutral-200 border-none cursor-pointer transition-colors rounded-[var(--radius-sharp)]"
+            className="h-[34px] px-4 text-[12px] font-bold whitespace-nowrap bg-[var(--pure-white)] text-neutral-900 hover:bg-neutral-200 border-none cursor-pointer transition-colors rounded-[var(--radius-sharp)]"
           >
             Save Changes
           </button>
           <button
             onClick={handleDiscardEdits}
-            className="h-[34px] px-4 text-[12px] font-bold whitespace-nowrap bg-transparent text-white hover:bg-white/10 border border-white/30 cursor-pointer transition-colors rounded-[var(--radius-sharp)]"
+            className="h-[34px] px-4 text-[12px] font-bold whitespace-nowrap bg-transparent text-[var(--pure-white)] hover:bg-[color-mix(in_srgb,var(--pure-white)_10%,transparent)] border border-[color-mix(in_srgb,var(--pure-white)_30%,transparent)] cursor-pointer transition-colors rounded-[var(--radius-sharp)]"
           >
             {dirty ? 'Discard' : 'Cancel'}
           </button>

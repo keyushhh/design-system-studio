@@ -77,9 +77,9 @@
       function generateScale(hexColor, type) {
         const [h, s, l] = hexToHsl(hexColor);
         const lightnessMap = type === 'brand' ? {
-          50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
+          50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
         } : {
-          50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
+          50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
         };
         Object.keys(lightnessMap).forEach(step => {
           document.documentElement.style.setProperty(`--${type}-${step}`, hslToHex(h, s, lightnessMap[step]));

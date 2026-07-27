@@ -27,6 +27,23 @@
 /* -------------------------------------------------------------------------
    Slide Deck Dynamic Light/Dark Theme Engine
    ------------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  /* The tint end of the brand scale is generated as a near-white wash (L=95),
+     which is right on paper and wrong on a dark canvas - it painted bright
+     bands into the sidebar's selected row, badges, and hover states. Derive
+     the tints from the live brand seed against the dark canvas instead, so
+     they follow whatever brand is active. Scoped to :root on purpose: slides
+     carry their own data-theme and must keep the paper-tinted values. */
+  --emerald-50: color-mix(in srgb, var(--emerald-500) 14%, #09090b) !important;
+  --emerald-100: color-mix(in srgb, var(--emerald-500) 20%, #09090b) !important;
+  --emerald-200: color-mix(in srgb, var(--emerald-500) 30%, #09090b) !important;
+  --emerald-700: color-mix(in srgb, var(--emerald-500) 72%, #ffffff) !important;
+  --secondary-50: color-mix(in srgb, var(--secondary-500) 14%, #09090b) !important;
+  --secondary-100: color-mix(in srgb, var(--secondary-500) 20%, #09090b) !important;
+  --accent-50: color-mix(in srgb, var(--accent-500) 14%, #09090b) !important;
+  --accent-100: color-mix(in srgb, var(--accent-500) 20%, #09090b) !important;
+}
+
 [data-theme="dark"],
 .page[data-theme="dark"],
 .wg-doc[data-theme="dark"] {
@@ -38,13 +55,29 @@
   --neutral-400: #64748b !important;
   --neutral-300: #334155 !important;
   --neutral-200: rgba(255, 255, 255, 0.08) !important;
+  --neutral-150: rgba(255, 255, 255, 0.06) !important;
   --neutral-100: rgba(255, 255, 255, 0.04) !important;
   --neutral-50: rgba(255, 255, 255, 0.02) !important;
   --border-subtle: rgba(255, 255, 255, 0.035) !important;
   --pure-white: #09090b !important;
+  --pure-black: #ffffff !important;
+  /* Tailwind's `bg-white` / `text-white` route through --color-white -> --bg-white.
+     Without flipping it here, every hardcoded bg-white panel stays paper-white
+     while its neutral-based text turns near-white. */
+  --bg-white: #0f0f12 !important;
   --bg-card-accent: rgba(255, 255, 255, 0.04) !important;
   --grid-line-color: rgba(255, 255, 255, 0.08) !important;
   --grid-cell-size: 120px;
+  /* Status colors, retuned for a dark canvas (light text, deep tinted fills). */
+  --danger-text: #fca5a5 !important;
+  --danger-surface: rgba(220, 38, 38, 0.14) !important;
+  --danger-border: rgba(248, 113, 113, 0.45) !important;
+  --warning-text: #fcd34d !important;
+  --warning-surface: rgba(217, 119, 6, 0.14) !important;
+  --warning-border: rgba(252, 211, 77, 0.4) !important;
+  --success-text: #6ee7b7 !important;
+  --success-surface: rgba(16, 185, 129, 0.14) !important;
+  --success-border: rgba(110, 231, 183, 0.4) !important;
   --glow-bg: radial-gradient(circle, color-mix(in srgb, var(--emerald-500) 35%, transparent) 0%, color-mix(in srgb, var(--emerald-500) 14%, transparent) 45%, transparent 70%) !important;
   --glow-filter: blur(30px) !important;
   background-color: #09090b !important;
@@ -62,12 +95,35 @@
   --neutral-400: #a3a3a3 !important;
   --neutral-300: #d4d4d4 !important;
   --neutral-200: #e5e5e5 !important;
+  --neutral-150: #eeeeee !important;
   --neutral-100: #f5f5f5 !important;
   --neutral-50: #fafafa !important;
   --border-subtle: rgba(0, 0, 0, 0.06) !important;
   --pure-white: #ffffff !important;
+  --pure-black: #000000 !important;
+  --bg-white: #ffffff !important;
+  /* Mirror of the dark tint remap above, against paper. Needed on the element
+     (not just :root) so a light slide nested inside dark chrome doesn't
+     inherit the dark washes. */
+  --emerald-50: color-mix(in srgb, var(--emerald-500) 9%, #ffffff) !important;
+  --emerald-100: color-mix(in srgb, var(--emerald-500) 18%, #ffffff) !important;
+  --emerald-200: color-mix(in srgb, var(--emerald-500) 32%, #ffffff) !important;
+  --emerald-700: color-mix(in srgb, var(--emerald-500) 78%, #000000) !important;
+  --secondary-50: color-mix(in srgb, var(--secondary-500) 9%, #ffffff) !important;
+  --secondary-100: color-mix(in srgb, var(--secondary-500) 18%, #ffffff) !important;
+  --accent-50: color-mix(in srgb, var(--accent-500) 9%, #ffffff) !important;
+  --accent-100: color-mix(in srgb, var(--accent-500) 18%, #ffffff) !important;
   --bg-card-accent: #f8fafc !important;
   --grid-line-color: rgba(0, 0, 0, 0.04) !important;
+  --danger-text: #dc2626 !important;
+  --danger-surface: #fef2f2 !important;
+  --danger-border: #fecaca !important;
+  --warning-text: #b45309 !important;
+  --warning-surface: #fffbeb !important;
+  --warning-border: #fcd34d !important;
+  --success-text: #047857 !important;
+  --success-surface: #ecfdf5 !important;
+  --success-border: #a7f3d0 !important;
   --glow-bg: radial-gradient(circle, color-mix(in srgb, var(--emerald-500) 8%, transparent) 0%, transparent 70%) !important;
   --glow-filter: none !important;
   background-color: #ffffff !important;

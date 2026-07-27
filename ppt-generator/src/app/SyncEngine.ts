@@ -4,38 +4,41 @@
  * with the parent Design System Studio via localStorage events.
  */
 
+import { readStudioTheme, subscribeStudioTokens } from './studioTheme';
+
 export class SyncEngine {
   /**
    * Initialize the sync engine. Applies current styles immediately,
    * then listens for cross-window/iframe storage events.
    */
   static init() {
-    this.applyDynamicTokens();
-    this.applyTheme();
-
-    window.addEventListener('storage', (e) => {
-      // Re-apply if any relevant ds-* key changes
-      if (e.key && e.key.startsWith('ds-')) {
-        this.applyDynamicTokens();
-        this.applyTheme();
-      }
+    this.apply();
+    subscribeStudioTokens(() => this.apply());
+    // localStorage writes made while this page was hidden don't fire `storage`
+    // here, so re-sync whenever the tab comes back to the foreground.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) this.apply();
     });
   }
 
+  private static apply() {
+    this.applyDynamicTokens();
+    this.applyTheme();
+  }
+
   private static applyTheme() {
-    try {
-      const theme = localStorage.getItem('ds-theme') || 'light';
-      const root = document.documentElement;
-      
-      if (theme === 'dark') {
-        root.setAttribute('data-theme', 'dark');
-      } else if (theme === 'hc') {
-        root.setAttribute('data-theme', 'hc');
-      } else {
-        root.removeAttribute('data-theme');
-      }
-    } catch (e) {
-      // Ignore
+    const theme = readStudioTheme();
+    const root = document.documentElement;
+
+    // The generator has no dedicated high-contrast sheet; `hc` is a dark canvas
+    // in the studio, so render it as dark rather than silently falling back to
+    // light chrome (which is what produced unreadable controls).
+    if (theme === 'dark' || theme === 'hc') {
+      root.setAttribute('data-theme', 'dark');
+      root.setAttribute('data-studio-theme', theme);
+    } else {
+      root.setAttribute('data-theme', 'light');
+      root.setAttribute('data-studio-theme', 'light');
     }
   }
 
@@ -45,7 +48,13 @@ export class SyncEngine {
       const savedAccent = localStorage.getItem('ds-active-accent');
 
       if (savedBrand) this.generateScale(savedBrand, 'emerald'); // Maps to PPT generator's primary color
-      if (savedAccent) this.generateScale(savedAccent, 'secondary'); // Maps to PPT generator's secondary
+      if (savedAccent) {
+        // `secondary` and `accent` are two names for the same studio accent
+        // seed in this app's token map; drive both so no component is left
+        // painting the stale built-in indigo.
+        this.generateScale(savedAccent, 'secondary');
+        this.generateScale(savedAccent, 'accent');
+      }
 
       const savedDisplayFont = localStorage.getItem('ds-font-display');
       const savedSansFont = localStorage.getItem('ds-font-sans');
@@ -111,14 +120,16 @@ export class SyncEngine {
     return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
   }
 
-  private static generateScale(hexColor: string, type: 'emerald' | 'secondary') {
+  private static generateScale(hexColor: string, type: 'emerald' | 'secondary' | 'accent') {
     const [h, s, l] = this.hexToHsl(hexColor);
-    
+
     // Use the same lightness mapping as the parent Design System Studio
+    // 650 is a real step in this app's token map (--color-*-650); leaving it out
+    // pinned those surfaces to the built-in emerald no matter what brand was picked.
     const lightnessMap: Record<string, number> = type === 'emerald' ? {
-      50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
+      50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
     } : {
-      50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
+      50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
     };
 
     Object.keys(lightnessMap).forEach(step => {

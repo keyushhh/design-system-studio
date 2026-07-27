@@ -4,7 +4,7 @@
    bundle (window.Design System StudioDesignSystem_e71b95). */
 const NS = window.DesignSystemStudio || window.DesignSystemStudioDesignSystem || {};
 const { Button, IconButton, Badge, Card, Icon, Input, Select, Checkbox, Radio, Switch, Tabs, Tooltip, Toast, Eyebrow, HudBar, SlideFrame, MetricValue } = NS;
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useMemo } = React;
 
 function BrandLogo({ dark = false, style = {} }) {
   return React.createElement('div', {
@@ -108,18 +108,89 @@ const contrastRatio = (hex1, hex2) => {
   const l1 = lum(hex1), l2 = lum(hex2);
   return +((Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05)).toFixed(2);
 };
+/* Pairs are declared as token NAMES only. The hex behind each one is resolved
+   from the live cascade at render time (see resolveToken), so the checker
+   reports the theme and brand that are actually active instead of the emerald
+   light-mode values these used to be frozen at. */
 const WCAG_PAIRS = [
-  { fg:'--text-primary', fgHex:'#171717', bg:'--surface-default', bgHex:'#ffffff', label:'Body text on card surface' },
-  { fg:'--text-primary', fgHex:'#171717', bg:'--surface-canvas', bgHex:'#fbfbfb', label:'Body text on canvas' },
-  { fg:'--text-secondary', fgHex:'#525252', bg:'--surface-default', bgHex:'#ffffff', label:'Secondary text on card' },
-  { fg:'--text-muted', fgHex:'#737373', bg:'--surface-default', bgHex:'#ffffff', label:'Muted text on card' },
-  { fg:'--text-brand', fgHex:'#059669', bg:'--surface-default', bgHex:'#ffffff', label:'Brand link on card' },
-  { fg:'--text-inverse', fgHex:'#ffffff', bg:'--action-primary', bgHex:'#171717', label:'White text on primary button' },
-  { fg:'--text-on-brand', fgHex:'#ffffff', bg:'--action-brand', bgHex:'#059669', label:'White text on brand button' },
-  { fg:'--text-primary', fgHex:'#171717', bg:'--state-selected', bgHex:'#ecfdf5', label:'Selected nav item text' },
-  { fg:'--neutral-600', fgHex:'#525252', bg:'--neutral-100', bgHex:'#f5f5f5', label:'Caption on sunken surface' },
-  { fg:'--brand-700', fgHex:'#047857', bg:'--brand-50', bgHex:'#ecfdf5', label:'Brand badge text on badge bg' },
+  { fg:'--text-primary',   bg:'--surface-default', label:'Body text on card surface' },
+  { fg:'--text-primary',   bg:'--surface-canvas',  label:'Body text on canvas' },
+  { fg:'--text-secondary', bg:'--surface-default', label:'Secondary text on card' },
+  { fg:'--text-muted',     bg:'--surface-default', label:'Muted text on card' },
+  { fg:'--text-brand',     bg:'--surface-default', label:'Brand link on card' },
+  { fg:'--text-inverse',   bg:'--action-primary',  label:'Inverse text on primary button' },
+  { fg:'--text-on-brand',  bg:'--action-brand',    label:'Text on brand button' },
+  { fg:'--text-primary',   bg:'--state-selected',  label:'Selected nav item text' },
+  { fg:'--neutral-600',    bg:'--neutral-100',     label:'Caption on sunken surface' },
+  { fg:'--brand-700',      bg:'--brand-50',        label:'Brand badge text on badge bg' },
 ];
+
+/* Resolve a custom property to a concrete #rrggbb.
+   getComputedStyle returns whatever the author wrote (which may itself be
+   `var(--x)`, an rgb()/hsl() string, or a 3-digit hex), so normalize through a
+   throwaway element and the browser's own color parser. */
+const _tokenProbe = (() => {
+  if (typeof document === 'undefined') return null;
+  const el = document.createElement('span');
+  el.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none';
+  return el;
+})();
+
+const _toHex = (rgb) => '#' + rgb.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+
+/* A 1x1 canvas is the most reliable normalizer available: modern tokens
+   resolve to syntaxes getComputedStyle hands back verbatim - color-mix()
+   serializes as `color(srgb r g b / a)`, not rgba() - and hand-rolled regexes
+   miss them. Painting the color over a known backdrop both parses ANY valid
+   syntax and composites the alpha, which several dark-theme tokens rely on
+   (--state-selected is a translucent brand overlay). */
+const _paintCtx = (() => {
+  if (typeof document === 'undefined') return null;
+  const c = document.createElement('canvas');
+  c.width = c.height = 1;
+  return c.getContext('2d', { willReadFrequently: true });
+})();
+
+/** Composite `colorStr` over `backdropHex` and return the flattened #rrggbb. */
+function flattenColor(colorStr, backdropHex) {
+  if (!_paintCtx || !colorStr) return backdropHex;
+  try {
+    _paintCtx.clearRect(0, 0, 1, 1);
+    _paintCtx.fillStyle = backdropHex;
+    _paintCtx.fillRect(0, 0, 1, 1);
+    // An unparseable value leaves fillStyle untouched, so seed it with the
+    // backdrop first - a failed parse then reads as "no change" rather than
+    // silently reusing the previous token's color.
+    _paintCtx.fillStyle = backdropHex;
+    _paintCtx.fillStyle = colorStr;
+    _paintCtx.fillRect(0, 0, 1, 1);
+    const d = _paintCtx.getImageData(0, 0, 1, 1).data;
+    return _toHex([d[0], d[1], d[2]]);
+  } catch (e) {
+    return backdropHex;
+  }
+}
+
+/** The raw computed value of a custom property, as the browser serializes it. */
+function rawToken(name) {
+  if (typeof document === 'undefined' || !_tokenProbe) return '';
+  try {
+    if (!_tokenProbe.isConnected) document.body.appendChild(_tokenProbe);
+    _tokenProbe.style.color = '';
+    _tokenProbe.style.color = `var(${name})`;
+    return getComputedStyle(_tokenProbe).color || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+/** Resolve a token to an opaque #rrggbb, composited over `backdropHex`. */
+function resolveToken(name, fallback = '#000000', backdropHex) {
+  const raw = rawToken(name);
+  if (!raw) return fallback;
+  return flattenColor(raw, backdropHex || fallback);
+}
+
 
 /* ---- Changelog data ---- */
 const CHANGELOG = [
@@ -273,30 +344,89 @@ function Panel({ children, style }) {
 }
 
 /* ========== ONBOARDING WIZARD COMPONENT ========== */
+const WIZARD_ARCHETYPES = [
+  { id: 'editorial', name: 'Editorial Precision', desc: 'Sharp 0px corners, high contrast typography, ultra-dense data grids.', radius: '0px', font: 'Space Grotesk' },
+  { id: 'fintech', name: 'Fintech Minimal', desc: 'Clean 4px rounded edges, balanced Slate neutrals, focused data visualizers.', radius: '4px', font: 'Satoshi' },
+  { id: 'cyberpunk', name: 'Neon Cyberpunk', desc: 'High impact neon green accents, dark obsidian surfaces, monospaced HUD lines.', radius: '2px', font: 'JetBrains Mono' },
+  { id: 'craft', name: 'Warm Craft', desc: 'Smooth 8px pill contours, warm cream surfaces, organic brand highlights.', radius: '8px', font: 'Space Grotesk' },
+];
+
+/* One registry, used by BOTH the onboarding wizard and the Live Token
+   Customizer. They used to keep separate (and divergent) lists, which is how
+   the two panels ended up disagreeing about which preset was active. */
+const BRAND_PRESETS = [
+  { id: 'emerald', name: 'Emerald', brand: '#10b981', accent: '#22c55e', dark: '#171717', canvas: '#ffffff' },
+  { id: 'indigo', name: 'Electric Indigo', brand: '#6366f1', accent: '#818cf8', dark: '#0f172a', canvas: '#f8fafc' },
+  { id: 'violet', name: 'Ultra Violet', brand: '#8b5cf6', accent: '#a855f7', dark: '#1e1b4b', canvas: '#faf5ff' },
+  { id: 'rose', name: 'Neon Rose', brand: '#f43f5e', accent: '#fb7185', dark: '#111827', canvas: '#f9fafb' },
+  { id: 'amber', name: 'Solar Amber', brand: '#f59e0b', accent: '#fbbf24', dark: '#18181b', canvas: '#fafafa' },
+];
+const WIZARD_PRESETS = BRAND_PRESETS;
+
+/** Resolve a stored brand seed back to a preset id ('custom' when it matches none). */
+function presetIdForBrand(hex) {
+  const match = BRAND_PRESETS.find(p => p.brand.toLowerCase() === (hex || '').toLowerCase());
+  return match ? match.id : 'custom';
+}
+
+/** Persist + broadcast a brand/accent change so every panel in the studio
+ *  (wizard, customizer, WCAG checker, PPT generator) re-reads the same state. */
+function publishTokens({ brand, accent, preset }) {
+  try {
+    if (brand) localStorage.setItem('ds-active-brand', brand);
+    if (accent) localStorage.setItem('ds-active-accent', accent);
+    const id = preset || presetIdForBrand(brand);
+    if (id) localStorage.setItem('ds-active-preset', id);
+    window.dispatchEvent(new CustomEvent('ds-tokens-updated', { detail: { brand, accent, preset: id } }));
+  } catch (e) { /* private mode - the in-memory apply already happened */ }
+}
+
+/** Snapshot of what's currently persisted, so reopening the wizard shows the
+ *  brand that's actually applied instead of resetting to the emerald defaults. */
+function readWizardState() {
+  const get = (k, fallback) => {
+    try { return localStorage.getItem(k) || fallback; } catch (e) { return fallback; }
+  };
+  const brand = get('ds-active-brand', '#10b981');
+  const accent = get('ds-active-accent', '#22c55e');
+  return {
+    brandName: get('ds-brand-name', 'Design System Studio'),
+    tagline: get('ds-tagline', 'Engineered for Speed'),
+    archetype: get('ds-archetype', 'editorial'),
+    seedColor: brand,
+    accentSeed: accent,
+  };
+}
+
 function OnboardingWizard({ open, onClose, push }) {
   const [step, setStep] = useState(1);
-  const [brandName, setBrandName] = useState('Design System Studio');
-  const [tagline, setTagline] = useState('Engineered for Speed');
-  const [archetype, setArchetype] = useState('editorial');
-  const [seedColor, setSeedColor] = useState('#10b981');
-  const [accentSeed, setAccentSeed] = useState('#22c55e');
+  const [brandName, setBrandName] = useState(() => readWizardState().brandName);
+  const [tagline, setTagline] = useState(() => readWizardState().tagline);
+  const [archetype, setArchetype] = useState(() => readWizardState().archetype);
+  const [seedColor, setSeedColor] = useState(() => readWizardState().seedColor);
+  const [accentSeed, setAccentSeed] = useState(() => readWizardState().accentSeed);
+
+  // Rehydrate from what's persisted every time the wizard is reopened. Without
+  // this, the modal kept whatever it was mounted with and highlighted the wrong
+  // preset (e.g. "Emerald" selected while the page rendered Electric Indigo).
+  useEffect(() => {
+    if (!open) return;
+    const next = readWizardState();
+    setStep(1);
+    setBrandName(next.brandName);
+    setTagline(next.tagline);
+    setArchetype(next.archetype);
+    setSeedColor(next.seedColor);
+    setAccentSeed(next.accentSeed);
+  }, [open]);
 
   if (!open) return null;
 
-  const archetypes = [
-    { id: 'editorial', name: 'Editorial Precision', desc: 'Sharp 0px corners, high contrast typography, ultra-dense data grids.', radius: '0px', font: 'Space Grotesk' },
-    { id: 'fintech', name: 'Fintech Minimal', desc: 'Clean 4px rounded edges, balanced Slate neutrals, focused data visualizers.', radius: '4px', font: 'Satoshi' },
-    { id: 'cyberpunk', name: 'Neon Cyberpunk', desc: 'High impact neon green accents, dark obsidian surfaces, monospaced HUD lines.', radius: '2px', font: 'JetBrains Mono' },
-    { id: 'craft', name: 'Warm Craft', desc: 'Smooth 8px pill contours, warm cream surfaces, organic brand highlights.', radius: '8px', font: 'Space Grotesk' },
-  ];
-
-  const presets = [
-    { id: 'emerald', name: 'Emerald', brand: '#10b981', accent: '#22c55e' },
-    { id: 'indigo', name: 'Electric Indigo', brand: '#6366f1', accent: '#818cf8' },
-    { id: 'violet', name: 'Ultra Violet', brand: '#8b5cf6', accent: '#a855f7' },
-    { id: 'rose', name: 'Neon Rose', brand: '#f43f5e', accent: '#fb7185' },
-    { id: 'amber', name: 'Solar Amber', brand: '#f59e0b', accent: '#fbbf24' },
-  ];
+  const archetypes = WIZARD_ARCHETYPES;
+  const presets = WIZARD_PRESETS;
+  /* Hex comparison is case-insensitive: a seed typed as #F43F5E is the same
+     preset as one stored as #f43f5e. */
+  const isPresetActive = (p) => (seedColor || '').toLowerCase() === p.brand.toLowerCase();
 
   const finishSetup = () => {
     const brandScale = generateScale(seedColor, 'brand');
@@ -312,9 +442,11 @@ function OnboardingWizard({ open, onClose, push }) {
 
     localStorage.setItem('ds-wizard-completed', 'true');
     localStorage.setItem('ds-brand-name', brandName);
-    localStorage.setItem('ds-active-brand', seedColor);
-    localStorage.setItem('ds-active-accent', accentSeed);
-    window.dispatchEvent(new CustomEvent('ds-tokens-updated', { detail: { brand: seedColor, accent: accentSeed } }));
+    localStorage.setItem('ds-tagline', tagline);
+    localStorage.setItem('ds-archetype', archetype);
+    // Keep the preset id in step with the seeds, so the Live Token Customizer
+    // and the wizard agree on which chip is active (or that it's 'custom').
+    publishTokens({ brand: seedColor, accent: accentSeed });
 
     if (push) {
       push({ title: 'Brand Setup Complete', message: `Initialized ${brandName} with ${selectedArch?.name} archetype!`, tone: 'brand' });
@@ -415,8 +547,8 @@ function OnboardingWizard({ open, onClose, push }) {
               onClick: () => { setSeedColor(p.brand); setAccentSeed(p.accent); },
               style: {
                 padding: '8px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em',
-                border: seedColor === p.brand ? '2px solid var(--brand-500)' : '1px solid var(--border-default)',
-                background: seedColor === p.brand ? 'var(--state-selected)' : 'var(--surface-default)',
+                border: isPresetActive(p) ? '2px solid var(--brand-500)' : '1px solid var(--border-default)',
+                background: isPresetActive(p) ? 'var(--state-selected)' : 'var(--surface-default)',
                 color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
               }
             },
@@ -545,16 +677,22 @@ function hslToHex(h, s, l) {
 
 function generateScale(hexColor, type) {
   const [h, s, l] = hexToHsl(hexColor);
+  // 650 is a real step in colors.css (--brand-650); omitting it left that token
+  // frozen on the built-in emerald whenever a different brand seed was applied.
   const lightnessMap = type === 'brand' ? {
-    50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
+    50: 95, 100: 90, 200: 80, 300: 68, 400: 55, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30), 950: Math.max(2, l - 35)
   } : {
-    50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
+    50: 96, 100: 91, 200: 82, 300: 70, 400: 58, 500: l, 600: Math.max(10, l - 10), 650: Math.max(9, l - 14), 700: Math.max(8, l - 18), 800: Math.max(6, l - 24), 900: Math.max(4, l - 30)
   };
 
   const scale = {};
   Object.keys(lightnessMap).forEach(step => {
     scale[`--${type}-${step}`] = hslToHex(h, s, lightnessMap[step]);
   });
+  // Pin 500 to the exact seed. The HSL round-trip rounds (e.g. #6366f1 came
+  // back as #6467f2), which drifts the canonical brand color away from what
+  // the user actually picked.
+  scale[`--${type}-500`] = hexColor;
   return scale;
 }
 
@@ -569,8 +707,7 @@ function LiveTokenCustomizer({ push }) {
     const handleUpdate = (e) => {
       if (e.detail?.brand) setBrand500(e.detail.brand);
       if (e.detail?.accent) setAccent500(e.detail.accent);
-      const matched = presets.find(p => p.brand.toLowerCase() === (e.detail?.brand || '').toLowerCase());
-      setActivePreset(matched ? matched.id : 'custom');
+      setActivePreset(e.detail?.preset || presetIdForBrand(e.detail?.brand));
     };
     const savedBrand = localStorage.getItem('ds-active-brand');
     const savedAccent = localStorage.getItem('ds-active-accent');
@@ -578,23 +715,16 @@ function LiveTokenCustomizer({ push }) {
     if (savedBrand) setBrand500(savedBrand);
     if (savedAccent) setAccent500(savedAccent);
 
-    if (savedPreset) {
-      setActivePreset(savedPreset);
-    } else if (savedBrand) {
-      const matched = presets.find(p => p.brand.toLowerCase() === savedBrand.toLowerCase());
-      setActivePreset(matched ? matched.id : 'custom');
-    }
+    // Trust the stored brand seed over a stale preset id: the id is a label for
+    // the seed, so if they ever disagree the seed is what's actually rendered.
+    if (savedBrand) setActivePreset(presetIdForBrand(savedBrand));
+    else if (savedPreset) setActivePreset(savedPreset);
 
     window.addEventListener('ds-tokens-updated', handleUpdate);
     return () => window.removeEventListener('ds-tokens-updated', handleUpdate);
   }, []);
 
-  const presets = [
-    { id: 'emerald', name: 'Emerald (Default)', brand: '#10b981', accent: '#22c55e', dark: '#171717', canvas: '#ffffff' },
-    { id: 'indigo', name: 'Electric Indigo', brand: '#6366f1', accent: '#818cf8', dark: '#0f172a', canvas: '#f8fafc' },
-    { id: 'amber', name: 'Cyber Amber', brand: '#f59e0b', accent: '#fbbf24', dark: '#18181b', canvas: '#fafafa' },
-    { id: 'rose', name: 'Neon Rose', brand: '#f43f5e', accent: '#fb7185', dark: '#111827', canvas: '#f9fafb' },
-  ];
+  const presets = BRAND_PRESETS;
 
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiScale, setAiScale] = useState(null);
@@ -607,22 +737,26 @@ function LiveTokenCustomizer({ push }) {
     { label: '🌊 Ocean Minimal', brand: '#0284c7', accent: '#38bdf8' }
   ];
 
-  const applyBrandColor = (hex) => {
+  /* `silent` skips the broadcast so a paired brand+accent change (a preset)
+     emits one event instead of two half-applied ones. */
+  const applyBrandColor = (hex, silent) => {
     setBrand500(hex);
-    localStorage.setItem('ds-active-brand', hex);
     const scale = generateScale(hex, 'brand');
     Object.keys(scale).forEach(prop => {
       document.documentElement.style.setProperty(prop, scale[prop]);
     });
+    if (silent) { try { localStorage.setItem('ds-active-brand', hex); } catch (e) {} }
+    else publishTokens({ brand: hex, accent: accent500 });
   };
 
-  const applyAccentColor = (hex) => {
+  const applyAccentColor = (hex, silent) => {
     setAccent500(hex);
-    localStorage.setItem('ds-active-accent', hex);
     const scale = generateScale(hex, 'accent');
     Object.keys(scale).forEach(prop => {
       document.documentElement.style.setProperty(prop, scale[prop]);
     });
+    if (silent) { try { localStorage.setItem('ds-active-accent', hex); } catch (e) {} }
+    else publishTokens({ brand: brand500, accent: hex });
   };
 
   const generateAiPalette = (customText) => {
@@ -644,18 +778,17 @@ function LiveTokenCustomizer({ push }) {
     }
 
     setAiScale({ brand: b, accent: a, prompt: customText || aiPrompt });
-    applyBrandColor(b);
-    applyAccentColor(a);
-    localStorage.setItem('ds-active-brand', b);
-    localStorage.setItem('ds-active-accent', a);
-    window.dispatchEvent(new CustomEvent('ds-tokens-updated', { detail: { brand: b, accent: a } }));
+    setActivePreset('custom');
+    applyBrandColor(b, true);
+    applyAccentColor(a, true);
+    publishTokens({ brand: b, accent: a, preset: 'custom' });
     if (push) push({ title: 'AI OKLCH Scale Generated', message: `Generated scale for "${customText || aiPrompt}"`, tone: 'brand' });
   };
 
   const updateToken = (type, value) => {
     setActivePreset('custom');
-    if (type === 'brand') applyBrandColor(value);
-    else if (type === 'accent') applyAccentColor(value);
+    if (type === 'brand') { applyBrandColor(value, true); publishTokens({ brand: value, accent: accent500, preset: 'custom' }); }
+    else if (type === 'accent') { applyAccentColor(value, true); publishTokens({ brand: brand500, accent: value, preset: 'custom' }); }
     else if (type === 'neutral') {
       setNeutral900(value);
       const isLight = !document.documentElement.getAttribute('data-theme');
@@ -674,9 +807,9 @@ function LiveTokenCustomizer({ push }) {
 
   const applyPreset = (preset) => {
     setActivePreset(preset.id);
-    localStorage.setItem('ds-active-preset', preset.id);
-    applyBrandColor(preset.brand);
-    applyAccentColor(preset.accent);
+    applyBrandColor(preset.brand, true);
+    applyAccentColor(preset.accent, true);
+    publishTokens({ brand: preset.brand, accent: preset.accent, preset: preset.id });
     setNeutral900(preset.dark);
     const isLight = !document.documentElement.getAttribute('data-theme');
     if (isLight) {
@@ -691,7 +824,7 @@ function LiveTokenCustomizer({ push }) {
   };
 
   const resetTokens = () => {
-    ['50','100','200','300','400','500','600','700','800','900','950'].forEach(s => {
+    ['50','100','200','300','400','500','600','650','700','800','900','950'].forEach(s => {
       document.documentElement.style.removeProperty(`--brand-${s}`);
       document.documentElement.style.removeProperty(`--accent-${s}`);
     });
@@ -703,6 +836,9 @@ function LiveTokenCustomizer({ push }) {
     setNeutral900('#171717');
     setSurfaceCanvas('#ffffff');
     setActivePreset('emerald');
+    // Broadcast, or the wizard/PPT generator keep replaying the old seeds from
+    // localStorage on their next mount.
+    publishTokens({ brand: '#10b981', accent: '#22c55e', preset: 'emerald' });
     if (push) push({ title: 'Tokens Reset', message: 'Restored original system values', tone: 'brand' });
   };
 
@@ -1406,12 +1542,46 @@ function PresentationSection({ dark = false, push }) {
 
 /* ---- WCAG Contrast Checker Section ---- */
 function WCAGSection() {
+  /* Recompute whenever the theme or the brand/accent seeds change - the whole
+     point of the panel is to report the ACTIVE palette. */
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const refresh = () => setTick(t => t + 1);
+    const observer = new MutationObserver(refresh);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+    window.addEventListener('ds-tokens-updated', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('ds-tokens-updated', refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
+
+  /* Grade chips ride the active brand scale rather than a fixed emerald/amber.
+     A pass reads as "on brand", a near-miss as warning, a fail as error - and
+     each chip picks the foreground that actually contrasts with its own fill,
+     so an accessibility panel is never itself unreadable. */
+  const rows = useMemo(() => {
+    // Measure tokens as they actually render: a translucent surface token is
+    // composited over the app canvas, and the text over that result.
+    const canvas = resolveToken('--surface-canvas', '#ffffff', '#ffffff');
+    return WCAG_PAIRS.map((p) => {
+      const bgHex = resolveToken(p.bg, canvas, canvas);
+      const fgHex = resolveToken(p.fg, '#000000', bgHex);
+      return { ...p, fgHex, bgHex, ratio: contrastRatio(fgHex, bgHex) };
+    });
+  }, [tick]);
+
   const grade = (ratio) => {
-    if (ratio >= 7) return { label: 'AAA', color: '#059669' };
-    if (ratio >= 4.5) return { label: 'AA', color: '#16a34a' };
-    if (ratio >= 3) return { label: 'AA Large', color: '#d97706' };
-    return { label: 'Fail', color: '#dc2626' };
+    if (ratio >= 7) return { label: 'AAA', color: resolveToken('--brand-600', '#059669') };
+    if (ratio >= 4.5) return { label: 'AA', color: resolveToken('--brand-500', '#10b981') };
+    if (ratio >= 3) return { label: 'AA Large', color: resolveToken('--warning-600', '#d97706') };
+    return { label: 'Fail', color: resolveToken('--error-600', '#dc2626') };
   };
+  /* Pick black or white for the chip label based on the chip's own fill - a
+     light brand seed (amber, lime) would otherwise get white-on-yellow. */
+  const chipFg = (fill) => (contrastRatio(fill, '#ffffff') >= contrastRatio(fill, '#000000') ? '#ffffff' : '#000000');
   return React.createElement(Section, { id: 'wcag', kicker: 'System', title: 'WCAG Contrast Checker', intro: 'Contrast ratios for every text/surface token pair in the active theme. AA requires ≥4.5:1 (normal text) or ≥3:1 (large text). AAA requires ≥7:1.' },
     React.createElement('div', { style: { border: '1px solid var(--border-default)', background: 'var(--surface-default)' } },
       React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 200px 120px 120px 80px', gap: 12, padding: '10px 16px', background: 'var(--surface-subtle)', borderBottom: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 600 } },
@@ -1420,8 +1590,8 @@ function WCAGSection() {
         React.createElement('span', { style: { textAlign: 'center' } }, 'Ratio'),
         React.createElement('span', { style: { textAlign: 'center' } }, 'Sample'),
         React.createElement('span', { style: { textAlign: 'center' } }, 'Grade')),
-      WCAG_PAIRS.map((p, i) => {
-        const ratio = contrastRatio(p.fgHex, p.bgHex);
+      rows.map((p, i) => {
+        const ratio = p.ratio;
         const g = grade(ratio);
         return React.createElement('div', { key: i, style: { display: 'grid', gridTemplateColumns: '1fr 200px 120px 120px 80px', gap: 12, padding: '12px 16px', borderTop: i ? '1px solid var(--border-subtle)' : 'none', alignItems: 'center' } },
           React.createElement('span', { style: { fontSize: 13, color: 'var(--text-primary)' } }, p.label),
@@ -1431,7 +1601,7 @@ function WCAGSection() {
           React.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center' } }, ratio + ':1'),
           React.createElement('span', { style: { height: 32, background: p.bgHex, border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: p.fgHex } }, 'Aa'),
           React.createElement('span', { style: { textAlign: 'center' } },
-            React.createElement('span', { style: { display: 'inline-block', padding: '3px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--text-on-brand)', background: g.color, letterSpacing: '0.06em' } }, g.label)));
+            React.createElement('span', { style: { display: 'inline-block', padding: '3px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: chipFg(g.color), background: g.color, letterSpacing: '0.06em' } }, g.label)));
       })),
     React.createElement('div', { style: { marginTop: 20, padding: 16, background: 'var(--surface-default)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.8 } },
       React.createElement('span', { style: { fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: 6 } }, 'WCAG 2.1 Reference'),
